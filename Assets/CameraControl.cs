@@ -18,14 +18,17 @@ public class CameraControl : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButton(0))
+        if (Camera.main.pixelRect.Contains(Input.mousePosition))
         {
-            CameraOrbit();
-        }
+            if (Input.GetMouseButton(0))
+            {
+                CameraOrbit();
+            }
 
-        if (Input.GetAxis("Mouse ScrollWheel") != 0)
-        {
-            CameraZoom();
+            if (Input.GetAxis("Mouse ScrollWheel") != 0)
+            {
+                CameraZoom();
+            }
         }
     }
 
