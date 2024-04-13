@@ -8183,7 +8183,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Distance between points
+  m_Text: Distance between points (km)
 --- !u!222 &1889475343
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -8448,7 +8448,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Total Distance
+  m_Text: Total Distance (km)
 --- !u!222 &1977270527
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -8845,7 +8845,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1123425139}
         m_TargetAssemblyTypeName: GetAirportData, Assembly-CSharp
-        m_MethodName: ReadData
+        m_MethodName: StartDialog
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

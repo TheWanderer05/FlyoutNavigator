@@ -1,15 +1,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
+
 using System.IO;
 using TMPro;
+using SimpleFileBrowser;
 
 public class GetAirportData : MonoBehaviour
 {
     private string rawFileText;
     private string[] areaElements;
     private List<string[]> airportData = new List<string[]>();
+    private string m_defaultPath = "C:\\Users\\%USERNAME%\\AppData\\LocalLow\\Stonext Games\\Flyout\\AreaData";
 
     static readonly string NAMETAG = "name=";
     static readonly string STARTTAG = "start=";
@@ -25,10 +27,31 @@ public class GetAirportData : MonoBehaviour
     [SerializeField] private TMP_InputField m_destLatInput;
     [SerializeField] private TMP_InputField m_destLonInput;
 
-    public void ReadData()
+    public void StartDialog()
     {
-        string path = EditorUtility.OpenFilePanel("Open AreaData file","","txt");
-        StreamReader reader = new StreamReader(path);
+        FileBrowser.SetFilters(true, new FileBrowser.Filter("Files",".txt"));
+        FileBrowser.AddQuickLink("AreaData", m_defaultPath, null);
+
+        StartCoroutine(ShowDialogCoroutine());
+    }
+
+    private IEnumerator ShowDialogCoroutine()
+    {
+        yield return FileBrowser.WaitForLoadDialog(FileBrowser.PickMode.Files, false, m_defaultPath, null, "Load", "Select");
+        
+        Debug.Log(FileBrowser.Success);
+
+        if (FileBrowser.Success)
+        {
+            ReadData(FileBrowser.Result);
+        }
+    }
+
+    private void ReadData(string[] filePath)
+    {
+        // Multiselect was disabled in the dialog options, so we should only take from the first array element
+
+        StreamReader reader = new StreamReader(filePath[0]);
         rawFileText = reader.ReadToEnd();
         Debug.Log(rawFileText);
         
