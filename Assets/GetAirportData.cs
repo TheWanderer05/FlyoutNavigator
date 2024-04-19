@@ -8,16 +8,14 @@ using SimpleFileBrowser;
 
 public class GetAirportData : MonoBehaviour
 {
-    private string rawFileText;
-    private string[] areaElements;
-    private List<string[]> airportData = new List<string[]>();
     private string m_defaultPath = "C:\\Users\\%USERNAME%\\AppData\\LocalLow\\Stonext Games\\Flyout\\AreaData";
 
+    static readonly string AREATAG = "Area";
     static readonly string NAMETAG = "name=";
-    static readonly string STARTTAG = "start=";
+    //static readonly string STARTTAG = "start=";
     static readonly string LATTAG = "lat=";
     static readonly string LONTAG = "lon=";
-    static readonly string ALTTAG = "alt=";
+    //static readonly string ALTTAG = "alt=";
 
     [SerializeField] private TMP_Dropdown dd_start;
     [SerializeField] private TMP_Dropdown dd_dest;
@@ -26,6 +24,15 @@ public class GetAirportData : MonoBehaviour
     [SerializeField] private TMP_InputField m_startLonInput;
     [SerializeField] private TMP_InputField m_destLatInput;
     [SerializeField] private TMP_InputField m_destLonInput;
+
+    private List<AreaElement> m_areas = new List<AreaElement>();
+    struct AreaElement
+    {
+        public string name;
+        public string lat;
+        public string lon;
+        public int index;
+    }
 
     public void StartDialog()
     {
@@ -51,36 +58,66 @@ public class GetAirportData : MonoBehaviour
     {
         // Multiselect was disabled in the dialog options, so we should only take from the first array element
 
-        StreamReader reader = new StreamReader(filePath[0]);
-        rawFileText = reader.ReadToEnd();
-        Debug.Log(rawFileText);
-        
-        areaElements = rawFileText.Split("Area\n{");
+        // Need to refactor this to use this method here on line 55. Turns out some areadata files have \r\n, which breaks the parser I made
+        string[] fileLines = File.ReadAllLines(filePath[0]);
+        //StreamReader reader = new StreamReader(filePath[0]);
+        //rawFileText = reader.ReadToEnd();
+        //Debug.Log(rawFileText);
 
+        //areaElements = rawFileText.Split("Area\n{");
+
+        m_areas.Clear();
         dd_start.ClearOptions();
         dd_dest.ClearOptions();
 
-        //parse each area element for name, lat, and lon
-        foreach (string element in areaElements)
+        int idx = 0;
+
+        char[] delimiters = { '=', '\n' };
+
+        AreaElement currentArea;
+        currentArea.lat = "";
+        currentArea.lon = "";
+        currentArea.name = "";
+        currentArea.index = 0;
+
+        // count the number of area elements
+        foreach (string line in fileLines)
         {
-            if (element.Contains(NAMETAG) && element.Contains(STARTTAG))
+            string[] lineContents;
+
+            if (line.StartsWith(AREATAG))
             {
-                int index = element.IndexOf(NAMETAG);
-                string areaName = element.Substring(index + NAMETAG.Length, element.IndexOf(STARTTAG) - (2*STARTTAG.Length));   // This is a terrible hack
-
-                index = element.IndexOf(LATTAG);
-                string areaLat = element.Substring(index + LATTAG.Length, element.IndexOf(ALTTAG) - (index + ALTTAG.Length + 1) );
-
-                index = element.IndexOf(LONTAG);
-                string areaLon = element.Substring(index + LONTAG.Length, element.IndexOf(LATTAG) - (index + LATTAG.Length + 1) );
-
-                string[] item = {areaName, areaLat, areaLon};
-
-                airportData.Add(item);
-
-                addDropdownOption(item[0]);
-
-                Debug.Log(item);
+                currentArea.index = idx;
+                idx++;
+            }
+            else if (line.StartsWith(NAMETAG))
+            {
+                lineContents = line.Split(delimiters);
+                currentArea.name = lineContents[1];
+            }
+            else if(line.StartsWith(LATTAG))
+            {
+                lineContents = line.Split(delimiters);
+                currentArea.lat = lineContents[1];
+            }
+            else if (line.StartsWith(LONTAG))
+            {
+                lineContents = line.Split(delimiters);
+                currentArea.lon = lineContents[1];
+            }
+            else // Nothing relevant to grab, move on to next line
+            {
+                continue;
+            }
+            if (currentArea.lat != "" && currentArea.lon != "" && currentArea.name != "")
+            {
+                // when all fields are populated, add struct to the list
+                m_areas.Add(currentArea);
+                addDropdownOption(currentArea.name);
+                // reset current area element properties
+                currentArea.lat = "";
+                currentArea.lon = "";
+                currentArea.name = "";
             }
         }
 
@@ -106,8 +143,8 @@ public class GetAirportData : MonoBehaviour
     {
         int airfieldIndex = dd_start.value;
 
-        string airfieldLat = (airportData[airfieldIndex])[1];
-        string airfieldLon = (airportData[airfieldIndex])[2];
+        string airfieldLat = (m_areas[airfieldIndex]).lat;
+        string airfieldLon = (m_areas[airfieldIndex]).lon;
 
         convertFileCoordinates(ref airfieldLat);
         convertFileCoordinates(ref airfieldLon);
@@ -120,8 +157,8 @@ public class GetAirportData : MonoBehaviour
     {
         int airfieldIndex = dd_dest.value;
 
-        string airfieldLat = (airportData[airfieldIndex])[1];
-        string airfieldLon = (airportData[airfieldIndex])[2];
+        string airfieldLat = (m_areas[airfieldIndex]).lat;
+        string airfieldLon = (m_areas[airfieldIndex]).lon;
 
         convertFileCoordinates(ref airfieldLat);
         convertFileCoordinates(ref airfieldLon);
