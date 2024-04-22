@@ -25,8 +25,8 @@ public class GetAirportData : MonoBehaviour
     [SerializeField] private TMP_InputField m_destLatInput;
     [SerializeField] private TMP_InputField m_destLonInput;
 
-    private List<AreaElement> m_areas = new List<AreaElement>();
-    struct AreaElement
+    public List<AreaElement> m_areas = new List<AreaElement>();
+    public struct AreaElement
     {
         public string name;
         public string lat;
@@ -129,6 +129,10 @@ public class GetAirportData : MonoBehaviour
 
         setStartPoint();
         setDestPoint();
+
+        // create airfield points on the map
+        CreatePoints localPointsObject = FindObjectOfType<CreatePoints>();
+        localPointsObject.ModifyAirfieldPoints();
     }
 
     // There's probably a better way of doing this, but I only have two dropdowns and their contents are to be identical. Just add the options "manually" for both.

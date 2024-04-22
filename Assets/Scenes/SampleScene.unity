@@ -4632,6 +4632,7 @@ MonoBehaviour:
   m_wayPoint: {fileID: 5474630866594820540, guid: 28466a1d69074de4e9d5839360810eb2, type: 3}
   m_startPoint: {fileID: 977314223318622819, guid: 5b46485e24b722f458bc1c0a008fcd30, type: 3}
   m_endPoint: {fileID: 7352690311600836725, guid: 3837fb910db79f64ba5ae74b968e9e4c, type: 3}
+  m_fieldPoint: {fileID: 5474630866594820540, guid: 6c331205eab1c1445a29ade9f1e3171f, type: 3}
   m_anchor: {fileID: 612117605}
 --- !u!114 &1123425139
 MonoBehaviour:
@@ -6243,7 +6244,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 267.7394, y: 402}
+  m_AnchoredPosition: {x: 266.5, y: 316.35}
   m_SizeDelta: {x: 508, y: 35}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1533015075
@@ -6411,7 +6412,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 267.73935, y: 437.65082}
+  m_AnchoredPosition: {x: 266.5, y: 351.35}
   m_SizeDelta: {x: 508, y: 35}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1595711222

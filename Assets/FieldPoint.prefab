@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 4938344137044044413}
   m_Layer: 0
   m_Name: FieldPoint
-  m_TagString: navpoint
+  m_TagString: fieldpoint
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -62,7 +62,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: b38455bf60b8ea342bdc40f01dd9229c, type: 2}
+  - {fileID: 2100000, guid: 69b8b47e60602e64fbc85905cd771af1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

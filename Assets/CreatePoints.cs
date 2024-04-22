@@ -4,12 +4,14 @@ using UnityEngine;
 
 public class CreatePoints : MonoBehaviour
 {
-    private CalcStart calcStart;
+    private CalcStart m_calcStart;
+    private GetAirportData m_getAirportData;
     //private List<float[]> coordMat_local = new List<float[]>();
     private int m_ItemCount;
     [SerializeField] private GameObject m_wayPoint;
     [SerializeField] private GameObject m_startPoint;
     [SerializeField] private GameObject m_endPoint;
+    [SerializeField] private GameObject m_fieldPoint;
     [SerializeField] private Transform  m_anchor;
 
     //static readonly float QUAD = 0.5f * Mathf.PI;
@@ -23,16 +25,21 @@ public class CreatePoints : MonoBehaviour
         List<float[]> coordMat_local = new List<float[]>();
         coordMat_local.Clear();
 
-        calcStart = FindObjectOfType<CalcStart>();
-        m_ItemCount = calcStart.coordMat.Count;
-        coordMat_local = calcStart.coordMat;
+        m_calcStart = FindObjectOfType<CalcStart>();
+        m_ItemCount = m_calcStart.coordMat.Count;
+        coordMat_local = m_calcStart.coordMat;
 
         // get rid of all existing points
         //GameObject[] navObjects = GameObject.FindGameObjectsWithTag("navpoint");
         
         for(var i = m_anchor.childCount - 1; i >= 0; i--)
         {
-            Object.Destroy(m_anchor.transform.GetChild(i).gameObject);
+            if (m_anchor.transform.GetChild(i).gameObject.CompareTag("navpoint")
+                || m_anchor.transform.GetChild(i).gameObject.CompareTag("startpoint")
+                || m_anchor.transform.GetChild(i).gameObject.CompareTag("endpoint"))
+            { 
+                Object.Destroy(m_anchor.transform.GetChild(i).gameObject);
+            }
         }
 
         for (int i = 0; i < m_ItemCount; i++)   // number of rows in the coordmat
@@ -72,6 +79,49 @@ public class CreatePoints : MonoBehaviour
         }
     }
 
+    public void ModifyAirfieldPoints()
+    {
+        List<float[]> airfieldCoords_Local = new List<float[]>();
+        airfieldCoords_Local.Clear();
+        
+        List<GetAirportData.AreaElement> areaElements_Local = new List<GetAirportData.AreaElement>();
+        areaElements_Local.Clear();
+
+        // get rid of all existing points
+        for (var i = m_anchor.childCount - 1; i >= 0; i--)
+        {
+            if (m_anchor.transform.GetChild(i).gameObject.CompareTag("fieldpoint"))
+            {
+                Object.Destroy(m_anchor.transform.GetChild(i).gameObject);
+            }
+        }
+
+        m_getAirportData = FindObjectOfType<GetAirportData>();
+        areaElements_Local = m_getAirportData.m_areas;
+        
+        foreach (var areaElement in areaElements_Local)
+        {
+            string latLocal = areaElement.lat;
+            string lonLocal = areaElement.lon;
+            // test if airfield coords are already correct from file for placement
+            // they're not
+            float latLocal_fl = convertFileCoordinates(latLocal);
+            float lonLocal_fl = convertFileCoordinates(lonLocal);
+
+            if (lonLocal_fl < 0.0f)
+                lonLocal_fl += 360.0f;
+            lonLocal_fl += 270;
+
+            //convert transformed angles from deg to rad
+            latLocal_fl = latLocal_fl * RADCONV;
+            lonLocal_fl = lonLocal_fl * RADCONV;
+
+            var startPt = Instantiate(m_fieldPoint);
+            startPt.transform.SetParent(m_anchor);
+            startPt.transform.position = sph2Cart(latLocal_fl, lonLocal_fl);
+        }
+    }
+
     private Vector3 sph2Cart(float elev, float az)
     {
         float y = radius * Mathf.Sin(elev);
@@ -80,5 +130,16 @@ public class CreatePoints : MonoBehaviour
         float z = rcosElev * Mathf.Sin(az);
 
         return new Vector3(x, y, z);
+    }
+
+    private float convertFileCoordinates(string coordinate_str)
+    {
+        float coordinate_fl = 0.0f;
+        if (float.TryParse(coordinate_str, out coordinate_fl))
+        {
+            coordinate_fl -= 90.0f;
+        };
+
+        return coordinate_fl;
     }
 }

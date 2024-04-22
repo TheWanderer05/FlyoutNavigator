@@ -6,6 +6,8 @@ TagManager:
   tags:
   - navpoint
   - endpoint
+  - startpoint
+  - fieldpoint
   layers:
   - Default
   - TransparentFX
