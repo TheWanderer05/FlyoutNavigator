@@ -4430,6 +4430,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5b0ec6de3b353547b7a8104d3ad12fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_anchor: {fileID: 612117605}
 --- !u!4 &985205505
 Transform:
   m_ObjectHideFlags: 0
