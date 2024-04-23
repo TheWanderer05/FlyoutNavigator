@@ -14,11 +14,18 @@ public class CreatePoints : MonoBehaviour
     [SerializeField] private GameObject m_fieldPoint;
     [SerializeField] private Transform  m_anchor;
 
+    private Camera cameraObj;   // used to scale points on creation
+
     //static readonly float QUAD = 0.5f * Mathf.PI;
     //static readonly float TAU  = 2.0f * Mathf.PI;
 
     private float radius = 0.5f;
     static readonly float RADCONV = Mathf.PI / 180.0f;
+
+    void Start()
+    {
+        cameraObj = FindObjectOfType<Camera>();
+    }
 
     public void ModifyPoints()
     {
@@ -29,10 +36,14 @@ public class CreatePoints : MonoBehaviour
         m_ItemCount = m_calcStart.coordMat.Count;
         coordMat_local = m_calcStart.coordMat;
 
+        // get camera FOV for initial zoom scaling (literally yoinked from CameraControl)
+        float objScaleScalar = (cameraObj.fieldOfView / 60.0f) * 0.015f;  // 0.015 is the default waypoint scale
+        Vector3 scaleChange = new Vector3(objScaleScalar, objScaleScalar, objScaleScalar);
+
         // get rid of all existing points
         //GameObject[] navObjects = GameObject.FindGameObjectsWithTag("navpoint");
-        
-        for(var i = m_anchor.childCount - 1; i >= 0; i--)
+
+        for (var i = m_anchor.childCount - 1; i >= 0; i--)
         {
             if (m_anchor.transform.GetChild(i).gameObject.CompareTag("navpoint")
                 || m_anchor.transform.GetChild(i).gameObject.CompareTag("startpoint")
@@ -63,18 +74,21 @@ public class CreatePoints : MonoBehaviour
                 var startPt = Instantiate(m_startPoint);
                 startPt.transform.SetParent(m_anchor);
                 startPt.transform.position = sph2Cart(matLat, matLon);
+                startPt.transform.localScale = scaleChange;
             }
             else if (i == m_ItemCount - 1)                  // endpoint
             {
                 var endPt = Instantiate(m_endPoint);
                 endPt.transform.SetParent(m_anchor);
                 endPt.transform.position = sph2Cart(matLat, matLon);
+                endPt.transform.localScale = scaleChange;
             }
             else                                            // waypoint
             {
                 var wayPt = Instantiate(m_wayPoint);
                 wayPt.transform.SetParent(m_anchor);
                 wayPt.transform.position = sph2Cart(matLat, matLon);
+                wayPt.transform.localScale = scaleChange;
             }
         }
     }
@@ -95,6 +109,10 @@ public class CreatePoints : MonoBehaviour
                 Object.Destroy(m_anchor.transform.GetChild(i).gameObject);
             }
         }
+
+        // get camera FOV for initial zoom scaling (literally yoinked from CameraControl)
+        float objScaleScalar = (cameraObj.fieldOfView / 60.0f) * 0.015f;  // 0.015 is the default waypoint scale
+        Vector3 scaleChange = new Vector3(objScaleScalar, objScaleScalar, objScaleScalar);
 
         m_getAirportData = FindObjectOfType<GetAirportData>();
         areaElements_Local = m_getAirportData.m_areas;
@@ -119,6 +137,7 @@ public class CreatePoints : MonoBehaviour
             var startPt = Instantiate(m_fieldPoint);
             startPt.transform.SetParent(m_anchor);
             startPt.transform.position = sph2Cart(latLocal_fl, lonLocal_fl);
+            startPt.transform.localScale = scaleChange;
         }
     }
 

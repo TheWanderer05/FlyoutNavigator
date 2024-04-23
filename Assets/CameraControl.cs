@@ -8,7 +8,9 @@ public class CameraControl : MonoBehaviour
     private GameObject planetSphere;
     private float camSensitivity = 200.0f;
     private float zoomSensitivity = 1000.0f;
-    
+
+    [SerializeField] private Transform m_anchor;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -48,7 +50,25 @@ public class CameraControl : MonoBehaviour
     private void CameraZoom()
     {
         float zoomInput = Input.GetAxis("Mouse ScrollWheel") * zoomSensitivity * Time.deltaTime;
-
         cameraObj.fieldOfView -= zoomInput;
+
+        float objScaleScalar = (cameraObj.fieldOfView/60.0f) * 0.015f;  // 0.015 is the default waypoint scale
+        Vector3 scaleChange = new Vector3(objScaleScalar, objScaleScalar, objScaleScalar);
+
+        // scale waypoint size with fov
+        for (var i = m_anchor.childCount - 1; i >= 0; i--)
+        {
+            var child = m_anchor.GetChild(i);
+            if (child != null)
+            {
+                if (child.gameObject.CompareTag("navpoint")
+                    || child.gameObject.CompareTag("startpoint")
+                    || child.gameObject.CompareTag("endpoint")
+                    || child.gameObject.CompareTag("fieldpoint"))
+                {
+                    child.localScale = scaleChange;
+                }
+            }
+        }
     }
 }
