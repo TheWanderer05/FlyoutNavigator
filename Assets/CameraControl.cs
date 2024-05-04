@@ -62,11 +62,14 @@ public class CameraControl : MonoBehaviour
             if (child != null)
             {
                 if (child.gameObject.CompareTag("navpoint")
-                    || child.gameObject.CompareTag("startpoint")
-                    || child.gameObject.CompareTag("endpoint")
                     || child.gameObject.CompareTag("fieldpoint"))
                 {
                     child.localScale = scaleChange;
+                }
+                else if (child.gameObject.CompareTag("startpoint")
+                    || child.gameObject.CompareTag("endpoint"))
+                {
+                    child.localScale = scaleChange*1.15f;
                 }
             }
         }

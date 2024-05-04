@@ -74,14 +74,14 @@ public class CreatePoints : MonoBehaviour
                 var startPt = Instantiate(m_startPoint);
                 startPt.transform.SetParent(m_anchor);
                 startPt.transform.position = sph2Cart(matLat, matLon);
-                startPt.transform.localScale = scaleChange;
+                startPt.transform.localScale = scaleChange*1.15f;
             }
             else if (i == m_ItemCount - 1)                  // endpoint
             {
                 var endPt = Instantiate(m_endPoint);
                 endPt.transform.SetParent(m_anchor);
                 endPt.transform.position = sph2Cart(matLat, matLon);
-                endPt.transform.localScale = scaleChange;
+                endPt.transform.localScale = scaleChange*1.15f;
             }
             else                                            // waypoint
             {
