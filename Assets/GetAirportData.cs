@@ -133,6 +133,10 @@ public class GetAirportData : MonoBehaviour
         // create airfield points on the map
         CreatePoints localPointsObject = FindObjectOfType<CreatePoints>();
         localPointsObject.ModifyAirfieldPoints();
+        LabelManager localLabelManager = FindObjectOfType<LabelManager>();
+        localLabelManager.createAirfieldLabels();
+
+        // create text labels for airfields on the map
     }
 
     // There's probably a better way of doing this, but I only have two dropdowns and their contents are to be identical. Just add the options "manually" for both.

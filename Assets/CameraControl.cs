@@ -61,8 +61,7 @@ public class CameraControl : MonoBehaviour
             var child = m_anchor.GetChild(i);
             if (child != null)
             {
-                if (child.gameObject.CompareTag("navpoint")
-                    || child.gameObject.CompareTag("fieldpoint"))
+                if (child.gameObject.CompareTag("navpoint"))
                 {
                     child.localScale = scaleChange;
                 }
@@ -70,6 +69,12 @@ public class CameraControl : MonoBehaviour
                     || child.gameObject.CompareTag("endpoint"))
                 {
                     child.localScale = scaleChange*1.15f;
+                }
+                else if (child.gameObject.CompareTag("fieldpoint"))
+                {
+                    child.localScale = scaleChange;
+
+                    // Move text labels based on zoom.
                 }
             }
         }

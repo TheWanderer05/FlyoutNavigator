@@ -134,10 +134,11 @@ public class CreatePoints : MonoBehaviour
             latLocal_fl = latLocal_fl * RADCONV;
             lonLocal_fl = lonLocal_fl * RADCONV;
 
-            var startPt = Instantiate(m_fieldPoint);
-            startPt.transform.SetParent(m_anchor);
-            startPt.transform.position = sph2Cart(latLocal_fl, lonLocal_fl);
-            startPt.transform.localScale = scaleChange;
+            var fieldPt = Instantiate(m_fieldPoint);
+            fieldPt.transform.SetParent(m_anchor);
+            fieldPt.transform.position = sph2Cart(latLocal_fl, lonLocal_fl);
+            fieldPt.transform.localScale = scaleChange;
+            fieldPt.name = "fieldPoint_" + areaElement.name;    // kind of a stopgap solution for getting airfield names to the labels in LabelManager
         }
     }
 
