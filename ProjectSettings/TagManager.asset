@@ -8,6 +8,7 @@ TagManager:
   - endpoint
   - startpoint
   - fieldpoint
+  - airfieldLabel
   layers:
   - Default
   - TransparentFX
