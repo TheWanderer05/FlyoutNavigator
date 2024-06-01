@@ -16,6 +16,8 @@ public class LabelManager : MonoBehaviour
 
     static readonly string FIELDTAG = "fieldpoint";
     static readonly string AFLABELTAG = "airfieldLabel";
+    static readonly string NAVTAG = "navpoint";
+    static readonly string NAVLABELTAG = "navpointLabel";
 
     // Start is called before the first frame update
     void Start()
@@ -58,14 +60,48 @@ public class LabelManager : MonoBehaviour
         }
 
         // put the labels at a default radius
-        UpdateLabelOffset(m_maxRadius - m_minRadius);
+        UpdateLabelOffset(m_maxRadius - (m_maxRadius - m_minRadius));
+    }
+
+    public void createNavPointLabels()
+    {
+        for (var i = m_anchor.childCount - 1; i >= 0; i--)
+        {
+            if (m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG))
+            {
+                var thisChild = m_anchor.transform.GetChild(i).transform;
+
+                // add label by creating a new object with a text mesh, then parent it to the point.
+
+                GameObject namePlate = new GameObject("pointLabel");
+                namePlate.tag = NAVLABELTAG;
+                TextMeshPro textMesh = namePlate.AddComponent<TextMeshPro>();
+
+                if (textMesh != null)
+                {
+                    textMesh.transform.position = thisChild.position;
+                    string pointName = m_anchor.transform.GetChild(i).gameObject.name.Substring("navPoint_".Length);
+                    textMesh.text = pointName;
+                    textMesh.alignment = TextAlignmentOptions.Baseline;
+                }
+                namePlate.transform.SetParent(thisChild);
+                namePlate.transform.position = thisChild.position;
+                namePlate.transform.localScale = thisChild.localScale * 25;
+                namePlate.transform.rotation = thisChild.rotation;
+            }
+        }
+
+        // put the labels at a default radius
+        UpdateLabelOffset(m_maxRadius - (m_maxRadius - m_minRadius));
     }
 
     public void UpdateLabelRotation()
     {
         for (var i = m_anchor.childCount - 1; i >= 0; i--)
         {
-            if (m_anchor.transform.GetChild(i).gameObject.CompareTag(FIELDTAG))
+            if (m_anchor.transform.GetChild(i).gameObject.CompareTag(FIELDTAG)
+                || m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG)
+                )
             {
                 // now search for label...
                 Transform thisChild = m_anchor.transform.GetChild(i);
@@ -80,24 +116,37 @@ public class LabelManager : MonoBehaviour
 
     public void UpdateLabelOffset(float offsetScalar)
     {
-
+        float localOffsetScalar = offsetScalar;
+        bool isNavPt = false;
         for (var i = m_anchor.childCount - 1; i >= 0; i--)
         {
-            if (m_anchor.transform.GetChild(i).gameObject.CompareTag(FIELDTAG))
+            localOffsetScalar = offsetScalar;
+            
+            if (m_anchor.transform.GetChild(i).gameObject.CompareTag(FIELDTAG)
+                || m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG)
+                )
             {
+                isNavPt = false;
+
+                if (m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG))
+                {
+                    isNavPt = true;
+                    localOffsetScalar = offsetScalar / 2;
+                }
+                
                 // now search for label...
                 Transform thisChild = m_anchor.transform.GetChild(i);
                 Transform childText = thisChild.transform.Find("pointLabel");
                 if (childText != null)
                 {
-                    Vector3 newPosition = offsetRadius(childText.position.x, childText.position.y, childText.position.z, offsetScalar);
+                    Vector3 newPosition = offsetRadius(childText.position.x, childText.position.y, childText.position.z, localOffsetScalar, isNavPt);
                     childText.position = newPosition;
                 }
             }
         }
     }
 
-    private Vector3 offsetRadius(float xIn, float yIn, float zIn, float radiusOffset)
+    private Vector3 offsetRadius(float xIn, float yIn, float zIn, float radiusOffset, bool isNavPt)
     {
         // using an input desired radius/delta radius, get spherical coords of old position, add offset, then convert back to cartesian and output.
 
@@ -106,12 +155,17 @@ public class LabelManager : MonoBehaviour
         float elev = Mathf.Atan2(Mathf.Sqrt(xIn*xIn + zIn*zIn),yIn);
 
         float newRadius = radius + radiusOffset;
-        
-        if (newRadius > m_maxRadius)
-        {
+        float navMaxRadius = m_maxRadius - (m_maxRadius - m_minRadius)/2;
+
+        if (!isNavPt && newRadius >= m_maxRadius)
+        {   
             newRadius = m_maxRadius;
         }
-        else if (newRadius < m_minRadius)
+        else if (isNavPt && newRadius >= navMaxRadius)
+        {
+            newRadius = navMaxRadius;
+        }
+        else if (newRadius <= m_minRadius)
         {
             newRadius = m_minRadius;
         }

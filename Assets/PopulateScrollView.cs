@@ -37,6 +37,8 @@ public class PopulateScrollView : MonoBehaviour
             var brgText = item_go.transform.Find("BrgText");
             brgText.GetComponent<TMPro.TextMeshProUGUI>().text = ((coordMat_local[i])[2]).ToString();
 
+            var idText = item_go.transform.Find("IDText");
+            idText.GetComponent<TMPro.TextMeshProUGUI>().text = i.ToString();
 
             // set item's parent to content container
             item_go.transform.SetParent(m_ContentContainer);

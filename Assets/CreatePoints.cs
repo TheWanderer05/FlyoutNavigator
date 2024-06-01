@@ -89,8 +89,12 @@ public class CreatePoints : MonoBehaviour
                 wayPt.transform.SetParent(m_anchor);
                 wayPt.transform.position = sph2Cart(matLat, matLon);
                 wayPt.transform.localScale = scaleChange;
+                wayPt.name = "navPoint_" + i.ToString() + " ";  // the space is a stopgap for placing the number slightly to the left
             }
         }
+
+        LabelManager localLabelManager = FindObjectOfType<LabelManager>();
+        localLabelManager.createNavPointLabels();
     }
 
     public void ModifyAirfieldPoints()
