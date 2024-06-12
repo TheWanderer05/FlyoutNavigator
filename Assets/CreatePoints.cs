@@ -146,6 +146,19 @@ public class CreatePoints : MonoBehaviour
         }
     }
 
+    public void clearWaypoints()
+    {
+        for (var i = m_anchor.childCount - 1; i >= 0; i--)
+        {
+            if (m_anchor.transform.GetChild(i).gameObject.CompareTag("navpoint")
+                || m_anchor.transform.GetChild(i).gameObject.CompareTag("startpoint")
+                || m_anchor.transform.GetChild(i).gameObject.CompareTag("endpoint"))
+            {
+                Object.Destroy(m_anchor.transform.GetChild(i).gameObject);
+            }
+        }
+    }
+
     private Vector3 sph2Cart(float elev, float az)
     {
         float y = radius * Mathf.Sin(elev);

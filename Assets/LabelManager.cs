@@ -95,6 +95,27 @@ public class LabelManager : MonoBehaviour
         UpdateLabelOffset(m_maxRadius - (m_maxRadius - m_minRadius));
     }
 
+    public void clearNavPointLabels()
+    {
+        for (var i = m_anchor.childCount - 1; i >= 0; i--)
+        {
+            if (m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG))
+            {
+                var thisChild = m_anchor.transform.GetChild(i).gameObject;
+
+                for (var j = thisChild.transform.childCount - 1; j >= 0; j--)
+                {
+                    if (thisChild.transform.GetChild(j).gameObject.CompareTag(NAVLABELTAG))
+                    {
+                        // Delete the label.
+                        
+                        Object.Destroy(thisChild.transform.GetChild(j).gameObject);
+                    }
+                }
+            }
+        }
+    }
+
     public void UpdateLabelRotation()
     {
         for (var i = m_anchor.childCount - 1; i >= 0; i--)
