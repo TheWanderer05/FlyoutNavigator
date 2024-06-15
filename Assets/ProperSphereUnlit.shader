@@ -11,7 +11,7 @@ Shader "Unlit/ProperSphereUnlit"
         Tags { "RenderType"="Opaque" }
         LOD 200
 
-        // Shader code from: https://forum.unity.com/threads/what-is-wrong-with-unitys-spherical-mapping-how-to-fix-it.321205/
+        // Shader code from: forum.unity.com/threads/what-is-wrong-with-unitys-spherical-mapping-how-to-fix-it.321205/
         Pass
         {
             Tags {"LightMode" = "Always"}
