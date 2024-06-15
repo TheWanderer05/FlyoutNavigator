@@ -1819,19 +1819,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 344747476}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1123425140}
-        m_TargetAssemblyTypeName: OpenLink, Assembly-CSharp
-        m_MethodName: openShaderLink
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &344747476
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4906,6 +4894,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_focalPoint: {fileID: 4632365829929622314, guid: af8b4ec82e5d76546aa7c18f2afc79f1, type: 3}
   m_anchor: {fileID: 612117605}
+  m_labelPrefab: {fileID: 0}
 --- !u!1 &1171506561
 GameObject:
   m_ObjectHideFlags: 0
@@ -7308,7 +7297,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Shader code
 
-    (Opens browser)'
+    (Temp INOP)'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
