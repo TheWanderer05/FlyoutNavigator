@@ -10,6 +10,7 @@ public class LabelManager : MonoBehaviour
     //Transform m_worldCanvas;
     [SerializeField] private GameObject m_focalPoint;
     [SerializeField] private Transform m_anchor;
+    [SerializeField] private GameObject m_labelPrefab;
     private Transform m_localFocalPoint;
     static readonly float m_minRadius = 0.505f;
     static readonly float m_maxRadius = 0.58f;
@@ -39,23 +40,20 @@ public class LabelManager : MonoBehaviour
             {
                 var thisChild = m_anchor.transform.GetChild(i).transform;
 
-                // add label by creating a new object with a text mesh, then parent it to the point.
-
-                GameObject namePlate = new GameObject("pointLabel");
-                namePlate.tag = AFLABELTAG;
-                TextMeshPro textMesh = namePlate.AddComponent<TextMeshPro>();
-
-                if (textMesh != null)
+                var namePlate = Instantiate(m_labelPrefab);
+                if (namePlate != null)
                 {
-                    textMesh.transform.position = thisChild.position;
-                    string airfieldName = m_anchor.transform.GetChild(i).gameObject.name.Substring("fieldPoint_".Length);
-                    textMesh.text = airfieldName;
+                    namePlate.tag = AFLABELTAG;
 
+                    string airfieldName = m_anchor.transform.GetChild(i).gameObject.name.Substring("fieldPoint_".Length);
+                    var labelText = namePlate.transform.Find("LabelText");
+                    labelText.GetComponent<TMPro.TextMeshPro>().text = airfieldName;
+
+                    namePlate.transform.SetParent(thisChild);
+                    namePlate.transform.position = thisChild.position;
+                    namePlate.transform.localScale = thisChild.localScale * 25;
+                    namePlate.transform.rotation = thisChild.rotation;
                 }
-                namePlate.transform.SetParent(thisChild);
-                namePlate.transform.position = thisChild.position;
-                namePlate.transform.localScale = thisChild.localScale * 25;
-                namePlate.transform.rotation = thisChild.rotation;
             }
         }
 
@@ -71,23 +69,20 @@ public class LabelManager : MonoBehaviour
             {
                 var thisChild = m_anchor.transform.GetChild(i).transform;
 
-                // add label by creating a new object with a text mesh, then parent it to the point.
-
-                GameObject namePlate = new GameObject("pointLabel");
-                namePlate.tag = NAVLABELTAG;
-                TextMeshPro textMesh = namePlate.AddComponent<TextMeshPro>();
-
-                if (textMesh != null)
+                var namePlate = Instantiate(m_labelPrefab);
+                if (namePlate != null)
                 {
-                    textMesh.transform.position = thisChild.position;
-                    string pointName = m_anchor.transform.GetChild(i).gameObject.name.Substring("navPoint_".Length);
-                    textMesh.text = pointName;
-                    textMesh.alignment = TextAlignmentOptions.Baseline;
+                    namePlate.tag = AFLABELTAG;
+
+                    string airfieldName = m_anchor.transform.GetChild(i).gameObject.name.Substring("navPoint_".Length);
+                    var labelText = namePlate.transform.Find("LabelText");
+                    labelText.GetComponent<TMPro.TextMeshPro>().text = airfieldName;
+
+                    namePlate.transform.SetParent(thisChild);
+                    namePlate.transform.position = thisChild.position;
+                    namePlate.transform.localScale = thisChild.localScale * 25;
+                    namePlate.transform.rotation = thisChild.rotation;
                 }
-                namePlate.transform.SetParent(thisChild);
-                namePlate.transform.position = thisChild.position;
-                namePlate.transform.localScale = thisChild.localScale * 25;
-                namePlate.transform.rotation = thisChild.rotation;
             }
         }
 
@@ -126,7 +121,7 @@ public class LabelManager : MonoBehaviour
             {
                 // now search for label...
                 Transform thisChild = m_anchor.transform.GetChild(i);
-                Transform childText = thisChild.transform.Find("pointLabel");
+                Transform childText = thisChild.transform.GetChild(0);  // Dumb and hacky but the text is LITERALLY the only component
                 if (childText != null)
                 {
                     childText.rotation = Quaternion.LookRotation(childText.position - m_localFocalPoint.position);
@@ -157,7 +152,7 @@ public class LabelManager : MonoBehaviour
                 
                 // now search for label...
                 Transform thisChild = m_anchor.transform.GetChild(i);
-                Transform childText = thisChild.transform.Find("pointLabel");
+                Transform childText = thisChild.transform.GetChild(0); // Dumb and hacky but the text is LITERALLY the only component
                 if (childText != null)
                 {
                     Vector3 newPosition = offsetRadius(childText.position.x, childText.position.y, childText.position.z, localOffsetScalar, isNavPt);

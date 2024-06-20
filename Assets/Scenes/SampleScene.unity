@@ -4564,7 +4564,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5b0ec6de3b353547b7a8104d3ad12fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_focalPoint: {fileID: 0}
+  m_focalPoint: {fileID: 4632365829929622314, guid: af8b4ec82e5d76546aa7c18f2afc79f1, type: 3}
   m_anchor: {fileID: 612117605}
 --- !u!4 &985205505
 Transform:
@@ -4789,7 +4789,6 @@ GameObject:
   - component: {fileID: 1123425137}
   - component: {fileID: 1123425138}
   - component: {fileID: 1123425139}
-  - component: {fileID: 1123425140}
   - component: {fileID: 1123425141}
   m_Layer: 0
   m_Name: Controller
@@ -4868,18 +4867,6 @@ MonoBehaviour:
   m_startLonInput: {fileID: 1753133809}
   m_destLatInput: {fileID: 1423051180}
   m_destLonInput: {fileID: 951657600}
---- !u!114 &1123425140
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1123425134}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: faaeb89aef4427a4b97d0f32e3125e9f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1123425141
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4894,7 +4881,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_focalPoint: {fileID: 4632365829929622314, guid: af8b4ec82e5d76546aa7c18f2afc79f1, type: 3}
   m_anchor: {fileID: 612117605}
-  m_labelPrefab: {fileID: 0}
+  m_labelPrefab: {fileID: 8440602008275546676, guid: 3ecfa2c1cf9617e41afdfb7c48f21d96, type: 3}
 --- !u!1 &1171506561
 GameObject:
   m_ObjectHideFlags: 0
