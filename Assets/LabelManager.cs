@@ -59,6 +59,8 @@ public class LabelManager : MonoBehaviour
 
         // put the labels at a default radius
         UpdateLabelOffset(m_maxRadius - (m_maxRadius - m_minRadius));
+        UpdateLabelRotation();
+        UpdateLabelOpacity(m_mainCamera.position);
     }
 
     public void createNavPointLabels()
@@ -88,6 +90,8 @@ public class LabelManager : MonoBehaviour
 
         // put the labels at a default radius
         UpdateLabelOffset(m_maxRadius - (m_maxRadius - m_minRadius));
+        UpdateLabelRotation();
+        UpdateLabelOpacity(m_mainCamera.position);
     }
 
     public void clearNavPointLabels()
@@ -125,6 +129,39 @@ public class LabelManager : MonoBehaviour
                 if (childText != null)
                 {
                     childText.rotation = Quaternion.LookRotation(childText.position - m_localFocalPoint.position);
+                }
+            }
+        }
+    }
+
+    // Compare distance between camera and label to determine opacity
+    public void UpdateLabelOpacity(Vector3 cameraPos)
+    {
+        for (var i = m_anchor.childCount - 1; i >= 0; i--)
+        {
+            if (m_anchor.transform.GetChild(i).gameObject.CompareTag(FIELDTAG)
+                || m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG)
+                )
+            {
+                // now search for label...
+                Transform thisChild = m_anchor.transform.GetChild(i);
+                Transform childText = thisChild.transform.GetChild(0);  // Dumb and hacky but the text is LITERALLY the only component
+                if (childText != null)
+                {
+                    TextMeshPro labelText = childText.transform.Find("LabelText").GetComponent<TextMeshPro>();
+                    if (labelText != null)
+                    {
+                        float distToLabel = (thisChild.transform.position - cameraPos).magnitude;
+
+                        if (distToLabel > 1.10f) // Camera rotation is around 0,0,0 so its radius from planet center is just the position magnitude
+                        {
+                            labelText.alpha = 8.33f - 6.67f * distToLabel;   // Should be opaque until 1.1 units or more away, completely transparent at 1.25 units
+                        }
+                        else
+                        {
+                            labelText.alpha = 1.0f;
+                        }
+                    }
                 }
             }
         }
