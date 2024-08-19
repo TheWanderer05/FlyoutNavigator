@@ -4960,6 +4960,7 @@ MonoBehaviour:
   m_anchor: {fileID: 612117605}
   m_labelPrefab: {fileID: 8440602008275546676, guid: 3ecfa2c1cf9617e41afdfb7c48f21d96, type: 3}
   m_subLabelPrefab: {fileID: 4545126793298742254, guid: 750195545de12a44baf27ea4a8a4fa77, type: 3}
+  subLabelCheckbox: {fileID: 1458436521}
 --- !u!1 &1171506561
 GameObject:
   m_ObjectHideFlags: 0
@@ -6328,13 +6329,25 @@ MonoBehaviour:
     m_DisabledTrigger: Disabled
   m_Interactable: 1
   m_TargetGraphic: {fileID: 293523923}
-  toggleTransition: 1
+  toggleTransition: 0
   graphic: {fileID: 1332151386}
   m_Group: {fileID: 0}
   onValueChanged:
     m_PersistentCalls:
-      m_Calls: []
-  m_IsOn: 0
+      m_Calls:
+      - m_Target: {fileID: 1123425141}
+        m_TargetAssemblyTypeName: LabelManager, Assembly-CSharp
+        m_MethodName: changeSublabelVisibility
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  m_IsOn: 1
 --- !u!1 &1473495641
 GameObject:
   m_ObjectHideFlags: 0

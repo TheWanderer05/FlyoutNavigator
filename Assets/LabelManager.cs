@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class LabelManager : MonoBehaviour
 {
@@ -12,6 +13,8 @@ public class LabelManager : MonoBehaviour
     [SerializeField] private Transform m_anchor;
     [SerializeField] private GameObject m_labelPrefab;
     [SerializeField] private GameObject m_subLabelPrefab;
+
+    public Toggle subLabelCheckbox;
 
     private CalcStart m_calcStart;
 
@@ -350,6 +353,34 @@ public class LabelManager : MonoBehaviour
                         {
                             Vector3 newPosition = offsetRadius(childText.position.x, childText.position.y, childText.position.z, localOffsetScalar, isNavPt);
                             childText.position = newPosition;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Toggle visibility of sublabels
+    public void changeSublabelVisibility()
+    {
+        for (var i = m_anchor.childCount - 1; i >= 0; i--)
+        {
+            if (m_anchor.transform.GetChild(i).gameObject.CompareTag(FIELDTAG)
+                || m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG)
+                || m_anchor.transform.GetChild(i).gameObject.CompareTag(STARTTAG)
+                || m_anchor.transform.GetChild(i).gameObject.CompareTag(ENDTAG)
+                )
+            {
+                Transform thisChild = m_anchor.transform.GetChild(i);
+                for (var j = thisChild.transform.childCount - 1; j >= 0; j--)
+                {
+                    if (thisChild.transform.GetChild(j).gameObject.CompareTag(NAVSUBLABELTAG))
+                    {
+                        GameObject childText = thisChild.transform.GetChild(j).gameObject;
+
+                        if (childText != null)
+                        {
+                            childText.SetActive(subLabelCheckbox.isOn);   // checkmark value isn't getting passed in
                         }
                     }
                 }
