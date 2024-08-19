@@ -24,6 +24,8 @@ public class LabelManager : MonoBehaviour
     static readonly string AFLABELTAG = "airfieldLabel";
     static readonly string NAVLABELTAG = "navpointLabel";
     static readonly string NAVSUBLABELTAG = "navSubLabel";
+    static readonly string STARTTAG = "startpoint";
+    static readonly string ENDTAG = "endpoint";
 
     // Start is called before the first frame update
     void Start()
@@ -132,13 +134,13 @@ public class LabelManager : MonoBehaviour
         coordListCount = m_calcStart.coordMat.Count;
         coordMat_local = m_calcStart.coordMat;
 
-        for (var i = m_anchor.childCount - 1; i >= 0; i--)
+        for (var i = m_anchor.childCount - 1; i >= 0; i--) // Will need to scale this code to work for multiple destinations, specifically finding the point index for intermediate destinations
         {
             // Search for points that are navpoints
             if (m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG))
             {
-                var thisNavPoint = m_anchor.transform.GetChild(i).transform;
-                
+                var thisPoint = m_anchor.transform.GetChild(i).transform;
+
                 // Find the number at the end of the point name and use it as an index
                 string pointName = m_anchor.transform.GetChild(i).gameObject.name.Substring("navPoint_".Length);
 
@@ -153,28 +155,30 @@ public class LabelManager : MonoBehaviour
                 float lon = (coordMat_local[pointIndex])[1];
                 float brg = (coordMat_local[pointIndex])[2];
 
-                var infoLabel = Instantiate(m_subLabelPrefab);
-                if (infoLabel != null)
-                {
-                    infoLabel.tag = NAVSUBLABELTAG;
+                instantiateSubLabel(thisPoint, lat, lon, brg);
+                
+            }
+            else if (m_anchor.transform.GetChild(i).gameObject.CompareTag(STARTTAG))    
+            {
+                var thisPoint = m_anchor.transform.GetChild(i).transform;
 
-                    // Replace sublabel prefab texts with relevant info
-                    var latText = infoLabel.transform.Find("LabelLatText");
-                    latText.GetComponent<TextMeshPro>().text += lat.ToString();
+                //Find data struct info that corresponds to this point (0 for start point)
+                float lat = (coordMat_local[0])[0]; // Can't use i here, as the child index does not correspond to the coordinate matrix index
+                float lon = (coordMat_local[0])[1];
+                float brg = (coordMat_local[0])[2];
 
-                    var lonText = infoLabel.transform.Find("LabelLonText");
-                    lonText.GetComponent<TextMeshPro>().text += lon.ToString();
+                instantiateSubLabel(thisPoint, lat, lon, brg);
+            }
+            else if (m_anchor.transform.GetChild(i).gameObject.CompareTag(ENDTAG))  
+            {
+                var thisPoint = m_anchor.transform.GetChild(i).transform;
 
-                    var brgText = infoLabel.transform.Find("LabelBearingText");
-                    brgText.GetComponent<TextMeshPro>().text += brg.ToString();
+                //Find data struct info that corresponds to this point (last one for end point)
+                float lat = (coordMat_local[coordListCount - 1])[0]; // Can't use i here, as the child index does not correspond to the coordinate matrix index
+                float lon = (coordMat_local[coordListCount - 1])[1];
+                float brg = (coordMat_local[coordListCount - 1])[2];
 
-                    infoLabel.transform.SetParent(thisNavPoint);
-                    infoLabel.transform.position = thisNavPoint.position;
-                    infoLabel.transform.localScale = thisNavPoint.localScale * 35;
-                    infoLabel.transform.rotation = thisNavPoint.rotation;
-
-                }
-
+                instantiateSubLabel(thisPoint, lat, lon, brg);
             }
         }
 
@@ -196,6 +200,8 @@ public class LabelManager : MonoBehaviour
             // Search for navpoints or airfield points
             if (m_anchor.transform.GetChild(i).gameObject.CompareTag(FIELDTAG)
                 || m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG)
+                || m_anchor.transform.GetChild(i).gameObject.CompareTag(STARTTAG)
+                || m_anchor.transform.GetChild(i).gameObject.CompareTag(ENDTAG)
                 )
             {
 
@@ -228,6 +234,8 @@ public class LabelManager : MonoBehaviour
         {
             if (m_anchor.transform.GetChild(i).gameObject.CompareTag(FIELDTAG)
                 || m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG)
+                || m_anchor.transform.GetChild(i).gameObject.CompareTag(STARTTAG)
+                || m_anchor.transform.GetChild(i).gameObject.CompareTag(ENDTAG)
                 )
             {
 
@@ -311,6 +319,8 @@ public class LabelManager : MonoBehaviour
             
             if (m_anchor.transform.GetChild(i).gameObject.CompareTag(FIELDTAG)
                 || m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG)
+                || m_anchor.transform.GetChild(i).gameObject.CompareTag(STARTTAG)
+                || m_anchor.transform.GetChild(i).gameObject.CompareTag(ENDTAG)
                 )
             {
                 isNavPt = false;
@@ -387,6 +397,31 @@ public class LabelManager : MonoBehaviour
         else
         {
             tmp.alpha = 1.0f;
+        }
+    }
+
+    private void instantiateSubLabel(Transform point, float lat, float lon, float brg)
+    {
+        var infoLabel = Instantiate(m_subLabelPrefab);
+        if (infoLabel != null)
+        {
+            infoLabel.tag = NAVSUBLABELTAG;
+
+            // Replace sublabel prefab texts with relevant info
+            var latText = infoLabel.transform.Find("LabelLatText");
+            latText.GetComponent<TextMeshPro>().text += string.Format("{0:0.0000}", lat);
+
+            var lonText = infoLabel.transform.Find("LabelLonText");
+            lonText.GetComponent<TextMeshPro>().text += string.Format("{0:0.0000}", lon);
+
+            var brgText = infoLabel.transform.Find("LabelBearingText");
+            brgText.GetComponent<TextMeshPro>().text += string.Format("{0:0.0}", brg);
+
+            infoLabel.transform.SetParent(point);
+            infoLabel.transform.position = point.position;
+            infoLabel.transform.localScale = point.localScale * 35;
+            infoLabel.transform.rotation = point.rotation;
+
         }
     }
 }

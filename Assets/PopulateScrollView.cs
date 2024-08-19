@@ -29,13 +29,13 @@ public class PopulateScrollView : MonoBehaviour
 
             // Replace the item text with relevant fields
             var latText = item_go.transform.Find("LatText");
-            latText.GetComponent<TMPro.TextMeshProUGUI>().text = ((coordMat_local[i])[0]).ToString();
+            latText.GetComponent<TMPro.TextMeshProUGUI>().text = string.Format("{0:0.0000}", ((coordMat_local[i])[0]));
 
             var lonText = item_go.transform.Find("LonText");
-            lonText.GetComponent<TMPro.TextMeshProUGUI>().text = ((coordMat_local[i])[1]).ToString();
+            lonText.GetComponent<TMPro.TextMeshProUGUI>().text = string.Format("{0:0.0000}", ((coordMat_local[i])[1]));
 
             var brgText = item_go.transform.Find("BrgText");
-            brgText.GetComponent<TMPro.TextMeshProUGUI>().text = ((coordMat_local[i])[2]).ToString();
+            brgText.GetComponent<TMPro.TextMeshProUGUI>().text = string.Format("{0:0.0}", ((coordMat_local[i])[2]));
 
             var idText = item_go.transform.Find("IDText");
             idText.GetComponent<TMPro.TextMeshProUGUI>().text = i.ToString();
