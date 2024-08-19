@@ -11,14 +11,19 @@ public class LabelManager : MonoBehaviour
     [SerializeField] private GameObject m_focalPoint;
     [SerializeField] private Transform m_anchor;
     [SerializeField] private GameObject m_labelPrefab;
+    [SerializeField] private GameObject m_subLabelPrefab;
+
+    private CalcStart m_calcStart;
+
     private Transform m_localFocalPoint;
     static readonly float m_minRadius = 0.505f;
     static readonly float m_maxRadius = 0.58f;
 
     static readonly string FIELDTAG = "fieldpoint";
-    static readonly string AFLABELTAG = "airfieldLabel";
     static readonly string NAVTAG = "navpoint";
+    static readonly string AFLABELTAG = "airfieldLabel";
     static readonly string NAVLABELTAG = "navpointLabel";
+    static readonly string NAVSUBLABELTAG = "navSubLabel";
 
     // Start is called before the first frame update
     void Start()
@@ -74,11 +79,11 @@ public class LabelManager : MonoBehaviour
                 var namePlate = Instantiate(m_labelPrefab);
                 if (namePlate != null)
                 {
-                    namePlate.tag = AFLABELTAG;
+                    namePlate.tag = NAVLABELTAG;
 
-                    string airfieldName = m_anchor.transform.GetChild(i).gameObject.name.Substring("navPoint_".Length);
+                    string pointName = m_anchor.transform.GetChild(i).gameObject.name.Substring("navPoint_".Length);
                     var labelText = namePlate.transform.Find("LabelText");
-                    labelText.GetComponent<TMPro.TextMeshPro>().text = airfieldName;
+                    labelText.GetComponent<TMPro.TextMeshPro>().text = pointName;
 
                     namePlate.transform.SetParent(thisChild);
                     namePlate.transform.position = thisChild.position;
@@ -88,7 +93,7 @@ public class LabelManager : MonoBehaviour
             }
         }
 
-        // put the labels at a default radius
+        // put the labels at a default radius and rotation
         UpdateLabelOffset(m_maxRadius - (m_maxRadius - m_minRadius));
         UpdateLabelRotation();
         UpdateLabelOpacity(m_mainCamera.position);
@@ -98,10 +103,11 @@ public class LabelManager : MonoBehaviour
     {
         for (var i = m_anchor.childCount - 1; i >= 0; i--)
         {
+            // Find navpoint object
             if (m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG))
             {
                 var thisChild = m_anchor.transform.GetChild(i).gameObject;
-
+                // Find any nav labels attached and delete them
                 for (var j = thisChild.transform.childCount - 1; j >= 0; j--)
                 {
                     if (thisChild.transform.GetChild(j).gameObject.CompareTag(NAVLABELTAG))
@@ -115,20 +121,101 @@ public class LabelManager : MonoBehaviour
         }
     }
 
+    public void createSubNavLabels()
+    {
+        // Get waypoint data from list
+        List<float[]> coordMat_local = new List<float[]>();
+        coordMat_local.Clear();
+        int coordListCount = 0;
+
+        m_calcStart = FindObjectOfType<CalcStart>();
+        coordListCount = m_calcStart.coordMat.Count;
+        coordMat_local = m_calcStart.coordMat;
+
+        for (var i = m_anchor.childCount - 1; i >= 0; i--)
+        {
+            // Search for points that are navpoints
+            if (m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG))
+            {
+                var thisNavPoint = m_anchor.transform.GetChild(i).transform;
+                
+                // Find the number at the end of the point name and use it as an index
+                string pointName = m_anchor.transform.GetChild(i).gameObject.name.Substring("navPoint_".Length);
+
+                int pointIndex = 0;
+                if (!int.TryParse(pointName, out pointIndex))
+                {
+                    continue; // bad index, try next
+                }
+
+                //Find data struct info that corresponds to this navpoint
+                float lat = (coordMat_local[pointIndex])[0]; // Can't use i here, as the child index does not correspond to the coordinate matrix index
+                float lon = (coordMat_local[pointIndex])[1];
+                float brg = (coordMat_local[pointIndex])[2];
+
+                var infoLabel = Instantiate(m_subLabelPrefab);
+                if (infoLabel != null)
+                {
+                    infoLabel.tag = NAVSUBLABELTAG;
+
+                    // Replace sublabel prefab texts with relevant info
+                    var latText = infoLabel.transform.Find("LabelLatText");
+                    latText.GetComponent<TextMeshPro>().text += lat.ToString();
+
+                    var lonText = infoLabel.transform.Find("LabelLonText");
+                    lonText.GetComponent<TextMeshPro>().text += lon.ToString();
+
+                    var brgText = infoLabel.transform.Find("LabelBearingText");
+                    brgText.GetComponent<TextMeshPro>().text += brg.ToString();
+
+                    infoLabel.transform.SetParent(thisNavPoint);
+                    infoLabel.transform.position = thisNavPoint.position;
+                    infoLabel.transform.localScale = thisNavPoint.localScale * 35;
+                    infoLabel.transform.rotation = thisNavPoint.rotation;
+
+                }
+
+            }
+        }
+
+        // put the labels at a default radius and rotation
+        UpdateLabelOffset(m_maxRadius - (m_maxRadius - m_minRadius));
+        UpdateLabelRotation();
+        UpdateLabelOpacity(m_mainCamera.position);
+    }
+
+    public void clearSubNavLabels()
+    {
+
+    }
+
     public void UpdateLabelRotation()
     {
         for (var i = m_anchor.childCount - 1; i >= 0; i--)
         {
+            // Search for navpoints or airfield points
             if (m_anchor.transform.GetChild(i).gameObject.CompareTag(FIELDTAG)
                 || m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG)
                 )
             {
-                // now search for label...
+
                 Transform thisChild = m_anchor.transform.GetChild(i);
-                Transform childText = thisChild.transform.GetChild(0);  // Dumb and hacky but the text is LITERALLY the only component
-                if (childText != null)
+                
+                // now search for labels
+                for (var j = thisChild.transform.childCount - 1; j >= 0; j--)
                 {
-                    childText.rotation = Quaternion.LookRotation(childText.position - m_localFocalPoint.position);
+                    if (thisChild.transform.GetChild(j).gameObject.CompareTag(NAVLABELTAG)
+                        || thisChild.transform.GetChild(j).gameObject.CompareTag(NAVSUBLABELTAG)
+                        || thisChild.transform.GetChild(j).gameObject.CompareTag(AFLABELTAG)
+                        )
+                    {
+                        Transform childText = thisChild.transform.GetChild(j);
+
+                        if (childText != null)
+                        {
+                            childText.rotation = Quaternion.LookRotation(childText.position - m_localFocalPoint.position);
+                        }
+                    }
                 }
             }
         }
@@ -143,23 +230,70 @@ public class LabelManager : MonoBehaviour
                 || m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG)
                 )
             {
-                // now search for label...
+
                 Transform thisChild = m_anchor.transform.GetChild(i);
-                Transform childText = thisChild.transform.GetChild(0);  // Dumb and hacky but the text is LITERALLY the only component
-                if (childText != null)
+
+                // now search for labels
+                for (var j = thisChild.transform.childCount - 1; j >= 0; j--)
                 {
-                    TextMeshPro labelText = childText.transform.Find("LabelText").GetComponent<TextMeshPro>();
-                    if (labelText != null)
+
+                    if (thisChild.transform.GetChild(j).gameObject.CompareTag(NAVLABELTAG)
+                        || thisChild.transform.GetChild(j).gameObject.CompareTag(NAVSUBLABELTAG)
+                        || thisChild.transform.GetChild(j).gameObject.CompareTag(AFLABELTAG)
+                        )
                     {
                         float distToLabel = (thisChild.transform.position - cameraPos).magnitude;
 
-                        if (distToLabel > 1.10f) // Camera rotation is around 0,0,0 so its radius from planet center is just the position magnitude
+                        Transform childText = thisChild.transform.GetChild(j);
+
+                        if (childText != null)
                         {
-                            labelText.alpha = 8.33f - 6.67f * distToLabel;   // Should be opaque until 1.1 units or more away, completely transparent at 1.25 units
-                        }
-                        else
-                        {
-                            labelText.alpha = 1.0f;
+                            TextMeshPro labelText = null;
+
+                            Transform textObject = childText.transform.Find("LabelText");
+                            if (textObject)
+                            {
+                                labelText = textObject.GetComponent<TextMeshPro>();
+                            }
+                            else    
+                            {
+                                textObject = childText.transform.Find("LabelLatText");
+                                if (textObject)
+                                {
+                                    labelText = textObject.GetComponent<TextMeshPro>(); // If the latitude text exists, then so should the other two. Find them.
+                                }
+                                
+                                Transform lonTextObject = childText.transform.Find("LabelLonText");
+                                TextMeshPro lonLabelText = null;
+                                if (lonTextObject)
+                                {
+                                    lonLabelText = lonTextObject.GetComponent<TextMeshPro>(); // longitude text
+                                }
+
+                                Transform brgTextObject = childText.transform.Find("LabelBearingText");
+                                TextMeshPro brgLabelText = null;
+                                if (brgTextObject)
+                                {
+                                   brgLabelText = brgTextObject.GetComponent<TextMeshPro>(); // bearing text
+                                }
+
+                                fadeLabel(labelText, distToLabel);
+                                
+                                if (lonLabelText != null)
+                                {
+                                    fadeLabel(lonLabelText, distToLabel);
+                                }
+
+                                if (brgLabelText != null)
+                                {
+                                    fadeLabel(brgLabelText, distToLabel);
+                                }
+                            }
+
+                            if (labelText != null)
+                            {
+                                fadeLabel(labelText, distToLabel);
+                            }
                         }
                     }
                 }
@@ -181,19 +315,33 @@ public class LabelManager : MonoBehaviour
             {
                 isNavPt = false;
 
-                if (m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG))
+                if (m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG)
+                    || m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVSUBLABELTAG)
+                    )
                 {
                     isNavPt = true;
                     localOffsetScalar = offsetScalar / 2;
                 }
                 
-                // now search for label...
+                
                 Transform thisChild = m_anchor.transform.GetChild(i);
-                Transform childText = thisChild.transform.GetChild(0); // Dumb and hacky but the text is LITERALLY the only component
-                if (childText != null)
+
+                // now search for labels
+                for (var j = thisChild.transform.childCount - 1; j >= 0; j--)
                 {
-                    Vector3 newPosition = offsetRadius(childText.position.x, childText.position.y, childText.position.z, localOffsetScalar, isNavPt);
-                    childText.position = newPosition;
+                    if (thisChild.transform.GetChild(j).gameObject.CompareTag(NAVLABELTAG)
+                        || thisChild.transform.GetChild(j).gameObject.CompareTag(NAVSUBLABELTAG)
+                        || thisChild.transform.GetChild(j).gameObject.CompareTag(AFLABELTAG)
+                        )
+                    {
+                        Transform childText = thisChild.transform.GetChild(j);
+
+                        if (childText != null)
+                        {
+                            Vector3 newPosition = offsetRadius(childText.position.x, childText.position.y, childText.position.z, localOffsetScalar, isNavPt);
+                            childText.position = newPosition;
+                        }
+                    }
                 }
             }
         }
@@ -228,5 +376,17 @@ public class LabelManager : MonoBehaviour
         float yOut = newRadius * Mathf.Cos(elev);
 
         return new Vector3(xOut, yOut, zOut);
+    }
+
+    private void fadeLabel(TextMeshPro tmp, float distance)
+    {
+        if (distance > 1.10f) // Camera rotation is around 0,0,0 so its radius from planet center is just the position magnitude
+        {
+            tmp.alpha = 8.33f - 6.67f * distance;   // Should be opaque until 1.1 units or more away, completely transparent at 1.25 units
+        }
+        else
+        {
+            tmp.alpha = 1.0f;
+        }
     }
 }

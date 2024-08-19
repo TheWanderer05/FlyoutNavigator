@@ -10,6 +10,7 @@ TagManager:
   - fieldpoint
   - airfieldLabel
   - navpointLabel
+  - navSubLabel
   layers:
   - Default
   - TransparentFX

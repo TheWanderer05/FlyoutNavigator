@@ -95,6 +95,7 @@ public class CreatePoints : MonoBehaviour
 
         LabelManager localLabelManager = FindObjectOfType<LabelManager>();
         localLabelManager.createNavPointLabels();
+        localLabelManager.createSubNavLabels();
     }
 
     public void ModifyAirfieldPoints()
