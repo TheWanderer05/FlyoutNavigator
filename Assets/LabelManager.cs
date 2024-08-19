@@ -58,7 +58,7 @@ public class LabelManager : MonoBehaviour
 
                     namePlate.transform.SetParent(thisChild);
                     namePlate.transform.position = thisChild.position;
-                    namePlate.transform.localScale = thisChild.localScale * 25;
+                    namePlate.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f) * 25;
                     namePlate.transform.rotation = thisChild.rotation;
                 }
             }
@@ -89,7 +89,7 @@ public class LabelManager : MonoBehaviour
 
                     namePlate.transform.SetParent(thisChild);
                     namePlate.transform.position = thisChild.position;
-                    namePlate.transform.localScale = thisChild.localScale * 25;
+                    namePlate.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f) * 25;
                     namePlate.transform.rotation = thisChild.rotation;
                 }
             }
@@ -419,7 +419,7 @@ public class LabelManager : MonoBehaviour
 
             infoLabel.transform.SetParent(point);
             infoLabel.transform.position = point.position;
-            infoLabel.transform.localScale = point.localScale * 35;
+            infoLabel.transform.localScale = new Vector3(0.02f, 0.02f , 0.02f) * 25;
             infoLabel.transform.rotation = point.rotation;
 
         }
