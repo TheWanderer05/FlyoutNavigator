@@ -83,8 +83,8 @@ public class CameraControl : MonoBehaviour
             }
         }
 
-        // Move text labels based on zoom, but only if camera FOV is below a certain level.
-        if (cameraObj.fieldOfView <= 60.0f)
+        // Move text labels based on zoom, but only if camera FOV is within a certain threshold.
+        if (cameraObj.fieldOfView <= 60.0f && cameraObj.fieldOfView >= 37.0f)
         {
             m_localLabelManager.UpdateLabelOffset(-Mathf.Sign(zoomInput) * 0.0025f);
         }
