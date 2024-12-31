@@ -35,8 +35,14 @@ public class LabelManager : MonoBehaviour
     {
         m_mainCamera = Camera.main.transform;
         Vector3 camPos = m_mainCamera.position;
-        Vector3 focalPos = new Vector3(camPos.x, camPos.y, camPos.z - 10.0f);
+        Vector3 focalPos = new Vector3(camPos.x, camPos.y, camPos.z - 10.0f);   // Camera "focal point" that labels will track for orientation
         m_localFocalPoint = Instantiate(m_focalPoint.transform, focalPos, m_mainCamera.rotation, m_mainCamera);
+    }
+
+    // Update function will adjust label opacity based on camera and cursor position. It will need to loop through all of the existing points to do this.
+    private void Update()
+    {
+        UpdateLabelOpacity();
     }
 
     public void createAirfieldLabels()
@@ -70,7 +76,7 @@ public class LabelManager : MonoBehaviour
         // put the labels at a default radius
         UpdateLabelOffset(m_maxRadius - (m_maxRadius - m_minRadius));
         UpdateLabelRotation();
-        UpdateLabelOpacity(m_mainCamera.position);
+        UpdateLabelOpacity();
     }
 
     public void createNavPointLabels()
@@ -101,7 +107,7 @@ public class LabelManager : MonoBehaviour
         // put the labels at a default radius and rotation
         UpdateLabelOffset(m_maxRadius - (m_maxRadius - m_minRadius));
         UpdateLabelRotation();
-        UpdateLabelOpacity(m_mainCamera.position);
+        UpdateLabelOpacity();
     }
 
     public void clearNavPointLabels()
@@ -188,7 +194,8 @@ public class LabelManager : MonoBehaviour
         // put the labels at a default radius and rotation
         UpdateLabelOffset(m_maxRadius - (m_maxRadius - m_minRadius));
         UpdateLabelRotation();
-        UpdateLabelOpacity(m_mainCamera.position);
+        UpdateLabelOpacity();
+        changeSublabelVisibility();
     }
 
     public void clearSubNavLabels()
@@ -230,10 +237,10 @@ public class LabelManager : MonoBehaviour
         }
     }
 
-    // Compare distance between camera and label to determine opacity
-    public void UpdateLabelOpacity(Vector3 cameraPos)
+    // Compare distance between label and cursor to determine opacity
+    public void UpdateLabelOpacity() // TODO: Don't fade labels of start and destination points
     {
-        for (var i = m_anchor.childCount - 1; i >= 0; i--)
+        for (var i = m_anchor.childCount - 1; i >= 0; i--) // Start by searching through all child objects of the globe for the points
         {
             if (m_anchor.transform.GetChild(i).gameObject.CompareTag(FIELDTAG)
                 || m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG)
@@ -244,66 +251,39 @@ public class LabelManager : MonoBehaviour
 
                 Transform thisChild = m_anchor.transform.GetChild(i);
 
-                // now search for labels
+                // now search for labels 
                 for (var j = thisChild.transform.childCount - 1; j >= 0; j--)
                 {
-
-                    if (thisChild.transform.GetChild(j).gameObject.CompareTag(NAVLABELTAG)
-                        || thisChild.transform.GetChild(j).gameObject.CompareTag(NAVSUBLABELTAG)
-                        || thisChild.transform.GetChild(j).gameObject.CompareTag(AFLABELTAG)
-                        )
+                    // For now, only adjust opacity of airfield labels
+                    if (thisChild.transform.GetChild(j).gameObject.CompareTag(AFLABELTAG))
                     {
-                        float distToLabel = (thisChild.transform.position - cameraPos).magnitude;
+                        var thisLabelTF = thisChild.transform;
 
-                        Transform childText = thisChild.transform.GetChild(j);
-
-                        if (childText != null)
+                        var camPlane = new Plane(m_mainCamera.forward, thisLabelTF.position); // Create a plane using the camera's forward vector and the target airfield point
+                        var ray = Camera.main.ScreenPointToRay(Input.mousePosition); // Ray from camera to cursor
+                        var dist = 0.0f;
+                        if (camPlane.Raycast(ray, out dist)) // Outputs distance between camera and cursor on plane
                         {
-                            TextMeshPro labelText = null;
+                            var vec3Pos = ray.GetPoint(dist);   // Get point where cursor is pointing to on the plane in 3D space
+                            var mouseProx = Vector3.Distance(vec3Pos, thisLabelTF.position); // Distance between mouse position projected to plane and airfield point
+                            var proxAngle = Mathf.Atan2(mouseProx, dist);
 
-                            Transform textObject = childText.transform.Find("LabelText");
-                            if (textObject)
+                            Transform childText = thisChild.transform.GetChild(j); // Find the actual text transform of the label
+
+                            if (childText != null)
                             {
-                                labelText = textObject.GetComponent<TextMeshPro>();
-                            }
-                            else    
-                            {
-                                textObject = childText.transform.Find("LabelLatText");
+                                TextMeshPro labelText = null;
+
+                                Transform textObject = childText.transform.Find("LabelText");
                                 if (textObject)
                                 {
-                                    labelText = textObject.GetComponent<TextMeshPro>(); // If the latitude text exists, then so should the other two. Find them.
-                                }
-                                
-                                Transform lonTextObject = childText.transform.Find("LabelLonText");
-                                TextMeshPro lonLabelText = null;
-                                if (lonTextObject)
-                                {
-                                    lonLabelText = lonTextObject.GetComponent<TextMeshPro>(); // longitude text
-                                }
+                                    labelText = textObject.GetComponent<TextMeshPro>();
 
-                                Transform brgTextObject = childText.transform.Find("LabelBearingText");
-                                TextMeshPro brgLabelText = null;
-                                if (brgTextObject)
-                                {
-                                   brgLabelText = brgTextObject.GetComponent<TextMeshPro>(); // bearing text
+                                    if (labelText != null)
+                                    {
+                                        fadeLabel2(labelText, proxAngle);
+                                    }
                                 }
-
-                                fadeLabel(labelText, distToLabel);
-                                
-                                if (lonLabelText != null)
-                                {
-                                    fadeLabel(lonLabelText, distToLabel);
-                                }
-
-                                if (brgLabelText != null)
-                                {
-                                    fadeLabel(brgLabelText, distToLabel);
-                                }
-                            }
-
-                            if (labelText != null)
-                            {
-                                fadeLabel(labelText, distToLabel);
                             }
                         }
                     }
@@ -311,6 +291,88 @@ public class LabelManager : MonoBehaviour
             }
         }
     }
+
+    // Legacy UpdateLabelOpacity - based solely on camera position
+    //public void UpdateLabelOpacity(Vector3 cameraPos)
+    //{
+    //    for (var i = m_anchor.childCount - 1; i >= 0; i--)
+    //    {
+    //        if (m_anchor.transform.GetChild(i).gameObject.CompareTag(FIELDTAG)
+    //            || m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG)
+    //            || m_anchor.transform.GetChild(i).gameObject.CompareTag(STARTTAG)
+    //            || m_anchor.transform.GetChild(i).gameObject.CompareTag(ENDTAG)
+    //            )
+    //        {
+
+    //            Transform thisChild = m_anchor.transform.GetChild(i);
+
+    //            // now search for labels
+    //            for (var j = thisChild.transform.childCount - 1; j >= 0; j--)
+    //            {
+
+    //                if (thisChild.transform.GetChild(j).gameObject.CompareTag(NAVLABELTAG)
+    //                    || thisChild.transform.GetChild(j).gameObject.CompareTag(NAVSUBLABELTAG)
+    //                    || thisChild.transform.GetChild(j).gameObject.CompareTag(AFLABELTAG)
+    //                    )
+    //                {
+    //                    float distToLabel = (thisChild.transform.position - cameraPos).magnitude;
+
+    //                    Transform childText = thisChild.transform.GetChild(j);
+
+    //                    if (childText != null)
+    //                    {
+    //                        TextMeshPro labelText = null;
+
+    //                        Transform textObject = childText.transform.Find("LabelText");
+    //                        if (textObject)
+    //                        {
+    //                            labelText = textObject.GetComponent<TextMeshPro>();
+    //                        }
+    //                        else
+    //                        {
+    //                            textObject = childText.transform.Find("LabelLatText");
+    //                            if (textObject)
+    //                            {
+    //                                labelText = textObject.GetComponent<TextMeshPro>(); // If the latitude text exists, then so should the other two. Find them.
+    //                            }
+
+    //                            Transform lonTextObject = childText.transform.Find("LabelLonText");
+    //                            TextMeshPro lonLabelText = null;
+    //                            if (lonTextObject)
+    //                            {
+    //                                lonLabelText = lonTextObject.GetComponent<TextMeshPro>(); // longitude text
+    //                            }
+
+    //                            Transform brgTextObject = childText.transform.Find("LabelBearingText");
+    //                            TextMeshPro brgLabelText = null;
+    //                            if (brgTextObject)
+    //                            {
+    //                                brgLabelText = brgTextObject.GetComponent<TextMeshPro>(); // bearing text
+    //                            }
+
+    //                            fadeLabel(labelText, distToLabel);
+
+    //                            if (lonLabelText != null)
+    //                            {
+    //                                fadeLabel(lonLabelText, distToLabel);
+    //                            }
+
+    //                            if (brgLabelText != null)
+    //                            {
+    //                                fadeLabel(brgLabelText, distToLabel);
+    //                            }
+    //                        }
+
+    //                        if (labelText != null)
+    //                        {
+    //                            fadeLabel(labelText, distToLabel);
+    //                        }
+    //                    }
+    //                }
+    //            }
+    //        }
+    //    }
+    //}
 
     public void UpdateLabelOffset(float offsetScalar)
     {
@@ -419,7 +481,7 @@ public class LabelManager : MonoBehaviour
         return new Vector3(xOut, yOut, zOut);
     }
 
-    private void fadeLabel(TextMeshPro tmp, float distance)
+    private void fadeLabel(TextMeshPro tmp, float distance) // Camera distance-based fading
     {
         if (distance > 1.10f) // Camera rotation is around 0,0,0 so its radius from planet center is just the position magnitude
         {
@@ -428,6 +490,19 @@ public class LabelManager : MonoBehaviour
         else
         {
             tmp.alpha = 1.0f;
+        }
+    }
+
+    private void fadeLabel2(TextMeshPro tmp, float arcDist) // Cursor distance-based fading
+    {
+        var fovScale = (Camera.main.fieldOfView / 60.0f);
+        if (arcDist < 0.07f * fovScale)
+        {
+            tmp.alpha = 2.0f - 20 * arcDist / fovScale;
+        }
+        else
+        {
+            tmp.alpha = 0.0f;
         }
     }
 

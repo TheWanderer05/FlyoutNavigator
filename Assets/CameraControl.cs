@@ -49,7 +49,7 @@ public class CameraControl : MonoBehaviour
 
             // Need a focal point behind the camera that the labels will track, have it move just like the camera
             m_localLabelManager.UpdateLabelRotation();
-            m_localLabelManager.UpdateLabelOpacity(cameraObj.transform.position);
+            //m_localLabelManager.UpdateLabelOpacity(cameraObj.transform.position);
         }
     }
 
