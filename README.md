@@ -1,6 +1,6 @@
 README
 
-// --- THIS APPLICATION DOES NOT (currently) INTERFACE WITH THE GAME. IT IS A STANDALONE APPLICATION. --- //
+// -- THIS APPLICATION DOES NOT (currently) INTERFACE WITH THE GAME. IT IS A STANDALONE APPLICATION. -- //
 
 How to use:
 -Enter lat/lon coordinates in the text fields.
