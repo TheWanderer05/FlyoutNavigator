@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PopulateScrollView : MonoBehaviour
+public class PopulateCoordScrollView : MonoBehaviour
 {
     [SerializeField] private Transform m_ContentContainer;
-    [SerializeField] private GameObject m_ItemPrefab;
+    [SerializeField] private GameObject m_coordItem;
     [SerializeField] private int m_ItemCount;
     [SerializeField] private GameObject m_distData;
 
@@ -25,7 +25,7 @@ public class PopulateScrollView : MonoBehaviour
         
         for (int i = 0; i < m_ItemCount; i++)   // number of rows
         {
-            var item_go = Instantiate(m_ItemPrefab);
+            var item_go = Instantiate(m_coordItem);
 
             // Replace the item text with relevant fields
             var latText = item_go.transform.Find("LatText");

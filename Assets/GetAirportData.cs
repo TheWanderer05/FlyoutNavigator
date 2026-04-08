@@ -18,11 +18,11 @@ public class GetAirportData : MonoBehaviour
     //static readonly string ALTTAG = "alt=";
 
     [SerializeField] private TMP_Dropdown dd_start;
-    [SerializeField] private TMP_Dropdown dd_dest;
+    [SerializeField] private TMP_Dropdown dd_dest; // going to need to replace this with a listener
 
     [SerializeField] private TMP_InputField m_startLatInput;
     [SerializeField] private TMP_InputField m_startLonInput;
-    [SerializeField] private TMP_InputField m_destLatInput;
+    [SerializeField] private TMP_InputField m_destLatInput; // going to need to replace this with a listener
     [SerializeField] private TMP_InputField m_destLonInput;
 
     public List<AreaElement> m_areas = new List<AreaElement>();
@@ -140,6 +140,7 @@ public class GetAirportData : MonoBehaviour
     }
 
     // There's probably a better way of doing this, but I only have two dropdowns and their contents are to be identical. Just add the options "manually" for both.
+    // ^ This shit is not going to fly for the multi-destination stuff
     private void addDropdownOption(string airfieldName)
     {
         dd_start.options.Add(new TMP_Dropdown.OptionData(airfieldName,null));
