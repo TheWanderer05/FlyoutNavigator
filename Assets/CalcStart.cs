@@ -36,6 +36,11 @@ public class CalcStart : MonoBehaviour
 
     public List<float[]> coordMat = new List<float[]>();
 
+    /* 
+     * I have come to the terrifying realization that I might need to give each destination its own number of midpoints.
+     * Otherwise, how would I split them up? What if I have two destinations and one of them is very close to the start or first destination?
+     * If the number of midpoints for both are equal, there would be too many to be useful for short distances.
+     */
     public void OnCalculateBtnClick()
     {
         haversine_distance = CalcDistance( destLocLat, destLocLon, startLocLat, startLocLon );

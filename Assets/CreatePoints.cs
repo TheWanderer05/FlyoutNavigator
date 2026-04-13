@@ -56,7 +56,6 @@ public class CreatePoints : MonoBehaviour
         for (int i = 0; i < m_ItemCount; i++)   // number of rows in the coordmat
         {
             float matLat = (coordMat_local[i])[0];
-            //matLat = 90.0f - matLat;   // need to transform to turn to cartesian
 
             float matLon = (coordMat_local[i])[1];
             if (matLon < 0.0f)
