@@ -4355,6 +4355,7 @@ MonoBehaviour:
   m_startLonInput: {fileID: 1753133809}
   m_destLatInput: {fileID: 0}
   m_destLonInput: {fileID: 0}
+  m_destList: []
 --- !u!114 &1123425141
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4387,7 +4388,7 @@ MonoBehaviour:
   m_ContentContainer: {fileID: 295858765}
   m_destItem: {fileID: 2204096762921768921, guid: 6cfdbfbf3eb4a0049a01a5557ebc1271, type: 3}
   m_ItemCount: 0
-  destItems: []
+  m_destItems: []
 --- !u!1 &1171506561
 GameObject:
   m_ObjectHideFlags: 0
@@ -4878,6 +4879,8 @@ MonoBehaviour:
   startLocLon: 0
   destLocLat: 0
   destLocLon: 0
+  destLocLatList: []
+  destLocLonList: []
   numPts: 0
   haversine_distance: 0
   haversine_dSplit: 0

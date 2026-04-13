@@ -8,10 +8,13 @@ public class CalcStart : MonoBehaviour
     // Start Lat/Lon coordinates in DEGREES
     public float startLocLat = 0.0f;
     public float startLocLon = 0.0f;
-    
-    // End Lat/Lon coordinates in DEGREES
+
+    // End Lat/Lon coordinates in DEGREES, soon to be deprecated
     public float destLocLat = 0.0f;
     public float destLocLon = 0.0f;
+    // Destination coordinate list
+    public List<float> destLocLatList;
+    public List<float> destLocLonList;
     
     // Number of midpoints
     public int numPts = 0;
