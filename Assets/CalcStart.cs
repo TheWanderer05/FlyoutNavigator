@@ -6,18 +6,26 @@ using TMPro;
 public class CalcStart : MonoBehaviour
 {
     // Start Lat/Lon coordinates in DEGREES
-    public float startLocLat = 0.0f;
-    public float startLocLon = 0.0f;
+    private float startLocLat = 0.0f;
+    private float startLocLon = 0.0f;
 
     // End Lat/Lon coordinates in DEGREES, soon to be deprecated
-    public float destLocLat = 0.0f;
-    public float destLocLon = 0.0f;
+    private float destLocLat = 0.0f;
+    private float destLocLon = 0.0f;
+    
+    private struct DestCoordsItem // Used to store lat/lon pairs. The ID is to track which destination item it belongs to.
+    {
+        float destLat;
+        float destLon;
+        int destID;
+    }
+
     // Destination coordinate list
-    public List<float> destLocLatList;
-    public List<float> destLocLonList;
+    private List<DestCoordsItem> destLocCoordList;
     
     // Number of midpoints
-    public int numPts = 0;
+    public int numPts = 0; // Soon to be deprecated
+    public List<int[]> numPtsList = new List<int[]>(); // [0]: Destination item identifier, [1]: Destination number of points
 
     // Planet radius in km
     private float planetRadius = 6371.955f;
@@ -182,5 +190,41 @@ public class CalcStart : MonoBehaviour
     {
         numPts = int.Parse(pointCount);
         Debug.Log(numPts);
+    }
+
+    public void updateNumPtsList(int numDestPts, int destIndex)
+    {
+        // Somehow need to keep track of which entry belongs to which destination
+        // Check if this entry already exists
+        bool foundFlag = false;
+
+        for(int i=0;i<numPtsList.Count;i++)
+        {
+            if (destIndex == numPtsList[i][0]) // This entry already exists, just update its number of points
+            {
+                numPtsList[i][1] = numDestPts;
+                foundFlag = true;
+                Debug.Log("CalcStart NumPts list item updated at index " + i + " (Item " + destIndex + ")");
+            }
+        }
+        // If this entry doesn't already exist, make one
+        if (!foundFlag)
+        {
+            int[] arrayToAdd =new int[]{ destIndex,numDestPts};
+            numPtsList.Add(arrayToAdd);
+            Debug.Log("CalcStart NumPts list item created at index " + (numPtsList.Count-1) + "(Item " + destIndex + ")");
+        }
+    }
+
+    public void removeDestination(int destIndex)
+    {
+        for (int i = 0; i < numPtsList.Count; i++)
+        {
+            if (destIndex == numPtsList[i][0]) // Remove the entry when found. if it isn't found, do nothing because it doesn't exist
+            {
+                numPtsList.RemoveAt(i);
+                Debug.Log("CalcStart NumPts list item removed at index " + i + " (Item " + destIndex +")");
+            }
+        }
     }
 }

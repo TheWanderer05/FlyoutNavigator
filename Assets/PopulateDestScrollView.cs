@@ -11,6 +11,8 @@ public class PopulateDestScrollView : MonoBehaviour
     [SerializeField] private int m_ItemCount;
 
     public List<GameObject> m_destItems = new List<GameObject>();
+    private int grossItems = 0; // Tracks total number of destination items that have existed. DO NOT DECREASE OR RESET. This is used in the item name, which is critical for bookkeeping!
+
 
     // Start is called before the first frame update
     void Start()
@@ -27,10 +29,14 @@ public class PopulateDestScrollView : MonoBehaviour
         itemAdded.transform.localScale = Vector2.one;
         // Get number of destination items present in the scrollview
         UInt16 numDests = (UInt16)m_destItems.Count;
-        itemAdded.transform.name = "listDest_" + numDests; // Starts at zero as opposed to the navpts convention
+        itemAdded.transform.name = "listDest_" + grossItems; // Starts at zero as opposed to the navpts convention
         m_destItems.Add(itemAdded);
         GetAirportData localGAD = FindAnyObjectByType<GetAirportData>();
         localGAD.addToRefList(itemAdded);
+
+        grossItems += 1; // Increase number of items that have existed.
+        // NEED TO ADD CALCSTART DESTINATION ADDITION WITH DEFAULTED COORDINATE ENTRIES
+
         //Debug.Log("Destination item added.");
     }
 
@@ -38,9 +44,10 @@ public class PopulateDestScrollView : MonoBehaviour
     public void removeDestItem(GameObject itemToRemove)
     {
         m_destItems.Remove(itemToRemove);
-        GetAirportData localGAD = FindAnyObjectByType<GetAirportData>();
-        localGAD.removeFromRefList(itemToRemove);
-        Destroy(itemToRemove);
+        // Why was this even in here instead of the delete button
+        //GetAirportData localGAD = FindAnyObjectByType<GetAirportData>();
+        //localGAD.removeFromRefList(itemToRemove);
+        //Destroy(itemToRemove);
     }
 
 }

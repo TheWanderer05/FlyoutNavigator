@@ -86,7 +86,7 @@ public class CreatePoints : MonoBehaviour
             {
                 var wayPt = Instantiate(m_wayPoint);
                 wayPt.transform.SetParent(m_anchor);
-                wayPt.transform.position = sph2Cart(matLat, matLon);
+                wayPt.transform.position = sph2Cart(matLat, matLon); // Critical: This shits itself if you calculate a route with nothing actually entered anywhere
                 wayPt.transform.localScale = scaleChange;
                 wayPt.name = "navPoint_" + i.ToString() + " ";  // the space is a stopgap for placing the number slightly to the left
             }
