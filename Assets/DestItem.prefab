@@ -375,6 +375,7 @@ GameObject:
   - component: {fileID: 4861022371877881313}
   - component: {fileID: 2707511110826619165}
   - component: {fileID: 559721607183748561}
+  - component: {fileID: 1917232366068765428}
   m_Layer: 5
   m_Name: DestItem
   m_TagString: Untagged
@@ -483,6 +484,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   numField: {fileID: 9145729194432745800}
+--- !u!114 &1917232366068765428
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2204096762921768921}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19ff5552607fe2f4594ee625411ea5ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  latField: {fileID: 8782525381729700258}
+  lonField: {fileID: 8620066766103168281}
 --- !u!1 &2213760142010199104
 GameObject:
   m_ObjectHideFlags: 0
