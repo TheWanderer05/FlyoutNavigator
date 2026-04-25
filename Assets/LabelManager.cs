@@ -81,6 +81,9 @@ public class LabelManager : MonoBehaviour
 
     public void createNavPointLabels()
     {
+        // Clear any existing Sublabels
+        clearNavPointLabels();
+
         for (var i = m_anchor.childCount - 1; i >= 0; i--)
         {
             if (m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG))
@@ -124,8 +127,7 @@ public class LabelManager : MonoBehaviour
                     if (thisChild.transform.GetChild(j).gameObject.CompareTag(NAVLABELTAG))
                     {
                         // Delete the label.
-                        
-                        Object.Destroy(thisChild.transform.GetChild(j).gameObject);
+                        DestroyImmediate(thisChild.transform.GetChild(j).gameObject);
                     }
                 }
             }
@@ -134,6 +136,9 @@ public class LabelManager : MonoBehaviour
 
     public void createSubNavLabels()
     {
+        // Clear any existing Sublabels
+        clearSubNavLabels();
+        
         // Get waypoint data from list
         List<float[]> coordMat_local = new List<float[]>();
         coordMat_local.Clear();
@@ -159,6 +164,7 @@ public class LabelManager : MonoBehaviour
                     continue; // bad index, try next
                 }
 
+                // BREAKS WHEN RECALCULATING AFTER CHANGING NUMBER OF WAYPOINTS AFTER HAVING ALREADY CALCULATED SOME
                 //Find data struct info that corresponds to this navpoint
                 float lat = (coordMat_local[pointIndex])[0]; // Can't use i here, as the child index does not correspond to the coordinate matrix index
                 float lon = (coordMat_local[pointIndex])[1];
@@ -200,7 +206,23 @@ public class LabelManager : MonoBehaviour
 
     public void clearSubNavLabels()
     {
-
+        for (var i = m_anchor.childCount - 1; i >= 0; i--)
+        {
+            // Find navpoint object
+            if (m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG))
+            {
+                var thisChild = m_anchor.transform.GetChild(i).gameObject;
+                // Find any nav sublabels attached and delete them
+                for (var j = thisChild.transform.childCount - 1; j >= 0; j--)
+                {
+                    if (thisChild.transform.GetChild(j).gameObject.CompareTag(NAVSUBLABELTAG))
+                    {
+                        // Delete the sublabel.
+                        DestroyImmediate(thisChild.transform.GetChild(j).gameObject);
+                    }
+                }
+            }
+        }
     }
 
     public void UpdateLabelRotation()

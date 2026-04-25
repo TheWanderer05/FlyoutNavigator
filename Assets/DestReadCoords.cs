@@ -32,8 +32,8 @@ public class DestReadCoords : MonoBehaviour
             {
                 CalcStart localCS = FindAnyObjectByType<CalcStart>();
                 // Update stuff in CalcStart
-
-                Debug.Log("Dest item " + destItemIndex + " updated Lat coords : " + latCoords);
+                localCS.updateDestItemLat(destItemIndex, latCoords);
+                //Debug.Log("Dest item " + destItemIndex + " updated Lat coords : " + latCoords);
             }
         }
 
@@ -50,8 +50,8 @@ public class DestReadCoords : MonoBehaviour
             {
                 CalcStart localCS = FindAnyObjectByType<CalcStart>();
                 // Update stuff in CalcStart
-
-                Debug.Log("Dest item " + destItemIndex + " updated Lon coords: " + lonCoords);
+                localCS.updateDestItemLon(destItemIndex, lonCoords);
+                //Debug.Log("Dest item " + destItemIndex + " updated Lon coords: " + lonCoords);
             }
         }
     }

@@ -47,6 +47,7 @@ public class PopulateCoordScrollView : MonoBehaviour
         }
 
         // Populate distance table
+        // How the hell is this going to work with multiple destinations? (It won't unless I change it)
         var item = m_distData;
         var totalDistText = item.transform.Find("totalDist");
         totalDistText.GetComponent<Text>().text = calcStart.haversine_distance.ToString();

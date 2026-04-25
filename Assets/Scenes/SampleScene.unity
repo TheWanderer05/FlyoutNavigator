@@ -4956,12 +4956,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 482a9747ad4316447a819d491a46466f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startLocLat: 0
-  startLocLon: 0
-  destLocLat: 0
-  destLocLon: 0
-  destLocLatList: []
-  destLocLonList: []
   numPts: 0
   haversine_distance: 0
   haversine_dSplit: 0

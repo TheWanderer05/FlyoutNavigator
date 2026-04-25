@@ -27,16 +27,18 @@ public class PopulateDestScrollView : MonoBehaviour
         itemAdded.transform.SetParent(m_ContentContainer);
         // Reset item's scale to one
         itemAdded.transform.localScale = Vector2.one;
-        // Get number of destination items present in the scrollview
-        UInt16 numDests = (UInt16)m_destItems.Count;
+        // Get total number of destination items that have existed in the scrollview
         itemAdded.transform.name = "listDest_" + grossItems; // Starts at zero as opposed to the navpts convention
         m_destItems.Add(itemAdded);
         GetAirportData localGAD = FindAnyObjectByType<GetAirportData>();
         localGAD.addToRefList(itemAdded);
 
-        grossItems += 1; // Increase number of items that have existed.
         // NEED TO ADD CALCSTART DESTINATION ADDITION WITH DEFAULTED COORDINATE ENTRIES
+        CalcStart localCS = FindAnyObjectByType<CalcStart>();
+        localCS.addDestCoordsItem(grossItems);
 
+
+        grossItems += 1; // Increase number of items that have existed.
         //Debug.Log("Destination item added.");
     }
 

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class CreatePoints : MonoBehaviour
@@ -15,6 +16,8 @@ public class CreatePoints : MonoBehaviour
     [SerializeField] private Transform  m_anchor;
 
     private Camera cameraObj;   // used to scale points on creation
+
+    private List<GameObject> m_points = new List<GameObject>();
 
     //static readonly float QUAD = 0.5f * Mathf.PI;
     //static readonly float TAU  = 2.0f * Mathf.PI;
@@ -43,15 +46,11 @@ public class CreatePoints : MonoBehaviour
         // get rid of all existing points
         //GameObject[] navObjects = GameObject.FindGameObjectsWithTag("navpoint");
 
-        for (var i = m_anchor.childCount - 1; i >= 0; i--)
+        for (var i = m_points.Count - 1; i >= 0; i--)
         {
-            if (m_anchor.transform.GetChild(i).gameObject.CompareTag("navpoint")
-                || m_anchor.transform.GetChild(i).gameObject.CompareTag("startpoint")
-                || m_anchor.transform.GetChild(i).gameObject.CompareTag("endpoint"))
-            { 
-                Object.Destroy(m_anchor.transform.GetChild(i).gameObject);
-            }
+            DestroyImmediate(m_points[i]);
         }
+        m_points.Clear();
 
         for (int i = 0; i < m_ItemCount; i++)   // number of rows in the coordmat
         {
@@ -74,6 +73,7 @@ public class CreatePoints : MonoBehaviour
                 startPt.transform.SetParent(m_anchor);
                 startPt.transform.position = sph2Cart(matLat, matLon);
                 startPt.transform.localScale = scaleChange*1.15f;
+                m_points.Add(startPt);
             }
             else if (i == m_ItemCount - 1)                  // endpoint
             {
@@ -81,6 +81,7 @@ public class CreatePoints : MonoBehaviour
                 endPt.transform.SetParent(m_anchor);
                 endPt.transform.position = sph2Cart(matLat, matLon);
                 endPt.transform.localScale = scaleChange*1.15f;
+                m_points.Add(endPt);
             }
             else                                            // waypoint
             {
@@ -89,6 +90,7 @@ public class CreatePoints : MonoBehaviour
                 wayPt.transform.position = sph2Cart(matLat, matLon); // Critical: This shits itself if you calculate a route with nothing actually entered anywhere
                 wayPt.transform.localScale = scaleChange;
                 wayPt.name = "navPoint_" + i.ToString() + " ";  // the space is a stopgap for placing the number slightly to the left
+                m_points.Add(wayPt);
             }
         }
 
@@ -148,16 +150,29 @@ public class CreatePoints : MonoBehaviour
 
     public void clearWaypoints()
     {
-        for (var i = m_anchor.childCount - 1; i >= 0; i--)
+        for (var i = m_points.Count - 1; i >= 0; i--)
         {
-            if (m_anchor.transform.GetChild(i).gameObject.CompareTag("navpoint")
-                || m_anchor.transform.GetChild(i).gameObject.CompareTag("startpoint")
-                || m_anchor.transform.GetChild(i).gameObject.CompareTag("endpoint"))
+            if (m_points[i].CompareTag("navpoint")
+                || m_points[i].CompareTag("startpoint")
+                || m_points[i].CompareTag("endpoint"))
             {
-                Object.Destroy(m_anchor.transform.GetChild(i).gameObject);
+                Destroy(m_points[i].gameObject);
             }
         }
     }
+
+    //public void clearWaypoints()
+    //{
+    //    for (var i = m_anchor.childCount - 1; i >= 0; i--)
+    //    {
+    //        if (m_anchor.transform.GetChild(i).gameObject.CompareTag("navpoint")
+    //            || m_anchor.transform.GetChild(i).gameObject.CompareTag("startpoint")
+    //            || m_anchor.transform.GetChild(i).gameObject.CompareTag("endpoint"))
+    //        {
+    //            Object.Destroy(m_anchor.transform.GetChild(i).gameObject);
+    //        }
+    //    }
+    //}
 
     private Vector3 sph2Cart(float elev, float az)
     {
