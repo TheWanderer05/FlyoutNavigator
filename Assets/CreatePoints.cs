@@ -64,8 +64,6 @@ public class CreatePoints : MonoBehaviour
             //convert transformed angles from deg to rad
             matLat = matLat * RADCONV;
             matLon = matLon * RADCONV;
-
-            //Vector3 cartCoords = latLon2Cart(matLat, matLon);
             
             if (i == 0)                                     // startpoint
             {
@@ -87,7 +85,7 @@ public class CreatePoints : MonoBehaviour
             {
                 var wayPt = Instantiate(m_wayPoint);
                 wayPt.transform.SetParent(m_anchor);
-                wayPt.transform.position = sph2Cart(matLat, matLon); // Critical: This shits itself if you calculate a route with nothing actually entered anywhere
+                wayPt.transform.position = sph2Cart(matLat, matLon);
                 wayPt.transform.localScale = scaleChange;
                 wayPt.name = "navPoint_" + i.ToString() + " ";  // the space is a stopgap for placing the number slightly to the left
                 m_points.Add(wayPt);
@@ -159,6 +157,7 @@ public class CreatePoints : MonoBehaviour
                 Destroy(m_points[i].gameObject);
             }
         }
+        m_points.Clear(); // Can't believe I didn't add this earlier, holy SHIT
     }
 
     //public void clearWaypoints()
