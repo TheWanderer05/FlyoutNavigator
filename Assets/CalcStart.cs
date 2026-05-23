@@ -105,6 +105,15 @@ public class CalcStart : MonoBehaviour
             localStartLat = localDestLat;
             localStartLon = localDestLon;
         }
+
+        // We have the list of coordinates, now go through and delete any duplicates
+        for (int k = 1; k < coordMat.Count; k++)
+        {
+            if ( (coordMat[k])[0] == (coordMat[k-1])[0] && (coordMat[k])[1] == (coordMat[k - 1])[1])
+            {
+                coordMat.RemoveAt(k-1);
+            }
+        }
     }
 
 
