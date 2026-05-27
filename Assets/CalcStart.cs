@@ -8,10 +8,6 @@ public class CalcStart : MonoBehaviour
     // Start Lat/Lon coordinates in DEGREES
     private float startLocLat = 0.0f;
     private float startLocLon = 0.0f;
-
-    // End Lat/Lon coordinates in DEGREES, soon to be deprecated
-    private float destLocLat = 0.0f;
-    private float destLocLon = 0.0f;
     
     private class DestCoordsItem // Used to store lat/lon pairs. The ID is to track which destination item it belongs to.
     {
@@ -22,7 +18,9 @@ public class CalcStart : MonoBehaviour
 
     // Destination coordinate list
     private List<DestCoordsItem> destLocCoordList = new List<DestCoordsItem>();
-    
+    public int locationCount = 0;
+
+    // A bunch of this stuff can probably be set to private with the use of getter methods instead of direct access to prevent write accidents
     // Number of midpoints
     public int numPts = 0; // Soon to be deprecated
     public List<int[]> numPtsList = new List<int[]>(); // [0]: Destination item identifier, [1]: Destination number of points
@@ -34,24 +32,22 @@ public class CalcStart : MonoBehaviour
     private float radConv = Mathf.PI / 180.0f;
 
     // Distance between start and end points
-    public float haversine_distance = 0.0f; // Consider making private list
+    public List<float> haversineDistList = new List<float>(); // Consider making private
 
     // Distance between midpoints
-    public float haversine_dSplit = 0.0f; // Consider making private list
+    public List<float> distSplitList = new List<float>(); // Consider making private
 
     // Initial bearing
     public float bearingStart = 0.0f;
 
     public List<float[]> coordMat = new List<float[]>();
 
-    /* 
-     * I have come to the terrifying realization that I might need to give each destination its own number of midpoints.
-     * Otherwise, how would I split them up? What if I have two destinations and one of them is very close to the start or first destination?
-     * If the number of midpoints for both are equal, there would be too many to be useful for short distances.
-     */
+ 
     public void OnCalculateBtnClick()
     {
         coordMat.Clear();
+        haversineDistList.Clear();
+        distSplitList.Clear();
 
         float localStartLat = startLocLat;
         float localStartLon = startLocLon;
@@ -62,9 +58,9 @@ public class CalcStart : MonoBehaviour
             float localDestLon = destLocCoordList[j].destLon;
             int localNumPts = numPtsList[j][1];
 
-            haversine_distance = CalcDistance(localDestLat, localDestLon, localStartLat, localStartLon);
+            haversineDistList.Add(CalcDistance(localDestLat, localDestLon, localStartLat, localStartLon));
             bearingStart = CalcBearing(localDestLat, localDestLon, localStartLat, localStartLon);
-            haversine_dSplit = haversine_distance / (localNumPts + 1);
+            distSplitList.Add(haversineDistList[j] / (localNumPts + 1));
 
             /*
                 For each checkpoint, project a point haversine_dSplit km in front of
@@ -80,7 +76,7 @@ public class CalcStart : MonoBehaviour
             // Calculate midpoint coordinates and add them to the matrix. Calculate bearing in the next loop...
             for (int i = 1; i <= localNumPts; i++)
             {
-                float[] interPtCoords = CalcInterPt(localStartLat, localStartLon, localDestLat, localDestLon, haversine_distance, fraction * i);
+                float[] interPtCoords = CalcInterPt(localStartLat, localStartLon, localDestLat, localDestLon, haversineDistList[j], fraction * i);
 
                 // Bearing has not been added yet
                 coordMat.Add(interPtCoords);
@@ -106,7 +102,7 @@ public class CalcStart : MonoBehaviour
             localStartLon = localDestLon;
         }
 
-        // We have the list of coordinates, now go through and delete any duplicates
+        // We have the list of coordinates, now go through and delete any duplicates. These will be at part-way airfield destinations
         for (int k = 1; k < coordMat.Count; k++)
         {
             if ( (coordMat[k])[0] == (coordMat[k-1])[0] && (coordMat[k])[1] == (coordMat[k - 1])[1])
@@ -183,13 +179,27 @@ public class CalcStart : MonoBehaviour
 
     public void readLatStartInput(string inLatStart)
     {
-        startLocLat = float.Parse(inLatStart);
-        Debug.Log(startLocLat);
+        if (float.TryParse(inLatStart, out float parsedLat))
+        {
+            startLocLat = parsedLat;
+        }
+        else
+        {
+            startLocLat = 0.0f;
+        }
+            Debug.Log(startLocLat);
     }
 
     public void readLonStartInput(string inLonStart)
     {
-        startLocLon = float.Parse(inLonStart);
+        if (float.TryParse(inLonStart, out float parsedLon))
+        {
+            startLocLon = parsedLon;
+        }
+        else
+        {
+            startLocLon = 0.0f;
+        }
         Debug.Log(startLocLon);
     }
 
@@ -212,6 +222,7 @@ public class CalcStart : MonoBehaviour
         newCoordsItem.destLon = 0.0f;
         newCoordsItem.destLat = 0.0f;
         destLocCoordList.Add(newCoordsItem);
+        locationCount = destLocCoordList.Count;
 
         // Create a numPtsList entry defaulted to zero points
         updateNumPtsList(0, idNum);

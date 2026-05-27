@@ -4,9 +4,8 @@ MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - m_ContentContainer: {instanceID: 0}
-  - m_coordItem: {fileID: 2204096762921768921, guid: f868edc99f33382469e37677f4576227, type: 3}
-  - m_distData: {instanceID: 0}
+  - m_coordItem: {instanceID: 0}
+  - m_distItem: {instanceID: 0}
   executionOrder: 200
   icon: {instanceID: 0}
   userData: 

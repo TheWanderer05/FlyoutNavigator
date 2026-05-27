@@ -105,6 +105,42 @@ public class LabelManager : MonoBehaviour
                     namePlate.transform.rotation = thisChild.rotation;
                 }
             }
+            else if (m_anchor.transform.GetChild(i).gameObject.CompareTag(STARTTAG))
+            {
+                var thisChild = m_anchor.transform.GetChild(i).transform;
+
+                var namePlate = Instantiate(m_labelPrefab);
+                if (namePlate != null)
+                {
+                    namePlate.tag = NAVLABELTAG; // Can just re-use this, no need to make a new tag
+
+                    var labelText = namePlate.transform.Find("LabelText");
+                    labelText.GetComponent<TMPro.TextMeshPro>().text = "0 (Start)";
+
+                    namePlate.transform.SetParent(thisChild);
+                    namePlate.transform.position = thisChild.position;
+                    namePlate.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f) * 25;
+                    namePlate.transform.rotation = thisChild.rotation;
+                }
+            }
+            else if (m_anchor.transform.GetChild(i).gameObject.CompareTag(ENDTAG))
+            {
+                var thisChild = m_anchor.transform.GetChild(i).transform;
+
+                var namePlate = Instantiate(m_labelPrefab);
+                if (namePlate != null)
+                {
+                    namePlate.tag = NAVLABELTAG; // Can just re-use this, no need to make a new tag
+
+                    var labelText = namePlate.transform.Find("LabelText");
+                    labelText.GetComponent<TMPro.TextMeshPro>().text = "End"; // Need to get number of points here
+
+                    namePlate.transform.SetParent(thisChild);
+                    namePlate.transform.position = thisChild.position;
+                    namePlate.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f) * 25;
+                    namePlate.transform.rotation = thisChild.rotation;
+                }
+            }
         }
 
         // put the labels at a default radius and rotation
@@ -148,7 +184,7 @@ public class LabelManager : MonoBehaviour
         coordListCount = m_calcStart.coordMat.Count;
         coordMat_local = m_calcStart.coordMat;
 
-        for (var i = m_anchor.childCount - 1; i >= 0; i--) // Will need to scale this code to work for multiple destinations, specifically finding the point index for intermediate destinations
+        for (var i = m_anchor.childCount - 1; i >= 0; i--)
         {
             // Search for points that are navpoints
             if (m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG))
@@ -164,13 +200,12 @@ public class LabelManager : MonoBehaviour
                     continue; // bad index, try next
                 }
 
-                // BREAKS WHEN RECALCULATING AFTER CHANGING NUMBER OF WAYPOINTS AFTER HAVING ALREADY CALCULATED SOME
                 //Find data struct info that corresponds to this navpoint
                 float lat = (coordMat_local[pointIndex])[0]; // Can't use i here, as the child index does not correspond to the coordinate matrix index
                 float lon = (coordMat_local[pointIndex])[1];
                 float brg = (coordMat_local[pointIndex])[2];
 
-                instantiateSubLabel(thisPoint, lat, lon, brg);
+                InstantiateSubLabel(thisPoint, lat, lon, brg);
                 
             }
             else if (m_anchor.transform.GetChild(i).gameObject.CompareTag(STARTTAG))    
@@ -182,7 +217,7 @@ public class LabelManager : MonoBehaviour
                 float lon = (coordMat_local[0])[1];
                 float brg = (coordMat_local[0])[2];
 
-                instantiateSubLabel(thisPoint, lat, lon, brg);
+                InstantiateSubLabel(thisPoint, lat, lon, brg);
             }
             else if (m_anchor.transform.GetChild(i).gameObject.CompareTag(ENDTAG))  
             {
@@ -193,7 +228,7 @@ public class LabelManager : MonoBehaviour
                 float lon = (coordMat_local[coordListCount - 1])[1];
                 float brg = (coordMat_local[coordListCount - 1])[2];
 
-                instantiateSubLabel(thisPoint, lat, lon, brg);
+                InstantiateSubLabel(thisPoint, lat, lon, brg);
             }
         }
 
@@ -201,7 +236,7 @@ public class LabelManager : MonoBehaviour
         UpdateLabelOffset(m_maxRadius - (m_maxRadius - m_minRadius));
         UpdateLabelRotation();
         UpdateLabelOpacity();
-        changeSublabelVisibility();
+        ChangeSublabelVisibility();
     }
 
     public void clearSubNavLabels()
@@ -303,7 +338,7 @@ public class LabelManager : MonoBehaviour
 
                                     if (labelText != null)
                                     {
-                                        fadeLabel2(labelText, proxAngle);
+                                        FadeLabel2(labelText, proxAngle);
                                     }
                                 }
                             }
@@ -435,7 +470,7 @@ public class LabelManager : MonoBehaviour
 
                         if (childText != null)
                         {
-                            Vector3 newPosition = offsetRadius(childText.position.x, childText.position.y, childText.position.z, localOffsetScalar, isNavPt);
+                            Vector3 newPosition = OffsetRadius(childText.position.x, childText.position.y, childText.position.z, localOffsetScalar, isNavPt);
                             childText.position = newPosition;
                         }
                     }
@@ -445,7 +480,7 @@ public class LabelManager : MonoBehaviour
     }
 
     // Toggle visibility of sublabels
-    public void changeSublabelVisibility()
+    public void ChangeSublabelVisibility()
     {
         for (var i = m_anchor.childCount - 1; i >= 0; i--)
         {
@@ -472,7 +507,7 @@ public class LabelManager : MonoBehaviour
         }
     }
 
-    private Vector3 offsetRadius(float xIn, float yIn, float zIn, float radiusOffset, bool isNavPt)
+    private Vector3 OffsetRadius(float xIn, float yIn, float zIn, float radiusOffset, bool isNavPt)
     {
         // using an input desired radius/delta radius, get spherical coords of old position, add offset, then convert back to cartesian and output.
 
@@ -503,7 +538,7 @@ public class LabelManager : MonoBehaviour
         return new Vector3(xOut, yOut, zOut);
     }
 
-    private void fadeLabel(TextMeshPro tmp, float distance) // Camera distance-based fading
+    private void FadeLabel(TextMeshPro tmp, float distance) // Camera distance-based fading
     {
         if (distance > 1.10f) // Camera rotation is around 0,0,0 so its radius from planet center is just the position magnitude
         {
@@ -515,7 +550,7 @@ public class LabelManager : MonoBehaviour
         }
     }
 
-    private void fadeLabel2(TextMeshPro tmp, float arcDist) // Cursor distance-based fading
+    private void FadeLabel2(TextMeshPro tmp, float arcDist) // Cursor distance-based fading
     {
         var fovScale = (Camera.main.fieldOfView / 60.0f);
         if (arcDist < 0.07f * fovScale)
@@ -528,7 +563,7 @@ public class LabelManager : MonoBehaviour
         }
     }
 
-    private void instantiateSubLabel(Transform point, float lat, float lon, float brg)
+    private void InstantiateSubLabel(Transform point, float lat, float lon, float brg)
     {
         var infoLabel = Instantiate(m_subLabelPrefab);
         if (infoLabel != null)
