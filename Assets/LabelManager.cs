@@ -63,7 +63,7 @@ public class LabelManager : MonoBehaviour
 
                     string airfieldName = m_anchor.transform.GetChild(i).gameObject.name.Substring("fieldPoint_".Length);
                     var labelText = namePlate.transform.Find("LabelText");
-                    labelText.GetComponent<TMPro.TextMeshPro>().text = airfieldName;
+                    labelText.GetComponent<TMPro.TextMeshPro>().text = "<#fac657>" + airfieldName+"</color>";
 
                     namePlate.transform.SetParent(thisChild);
                     namePlate.transform.position = thisChild.position;
@@ -97,7 +97,7 @@ public class LabelManager : MonoBehaviour
 
                     string pointName = m_anchor.transform.GetChild(i).gameObject.name.Substring("navPoint_".Length);
                     var labelText = namePlate.transform.Find("LabelText");
-                    labelText.GetComponent<TMPro.TextMeshPro>().text = pointName;
+                    labelText.GetComponent<TMPro.TextMeshPro>().text = "<#b8ffe1>" + pointName + "</color>";
 
                     namePlate.transform.SetParent(thisChild);
                     namePlate.transform.position = thisChild.position;
@@ -115,7 +115,7 @@ public class LabelManager : MonoBehaviour
                     namePlate.tag = NAVLABELTAG; // Can just re-use this, no need to make a new tag
 
                     var labelText = namePlate.transform.Find("LabelText");
-                    labelText.GetComponent<TMPro.TextMeshPro>().text = "0 (Start)";
+                    labelText.GetComponent<TMPro.TextMeshPro>().text = "<#b8ffe1>0 (Start)</color>";
 
                     namePlate.transform.SetParent(thisChild);
                     namePlate.transform.position = thisChild.position;
@@ -133,7 +133,7 @@ public class LabelManager : MonoBehaviour
                     namePlate.tag = NAVLABELTAG; // Can just re-use this, no need to make a new tag
 
                     var labelText = namePlate.transform.Find("LabelText");
-                    labelText.GetComponent<TMPro.TextMeshPro>().text = "End"; // Need to get number of points here
+                    labelText.GetComponent<TMPro.TextMeshPro>().text = "<#b8ffe1>End</color>"; // Need to get number of points here
 
                     namePlate.transform.SetParent(thisChild);
                     namePlate.transform.position = thisChild.position;
