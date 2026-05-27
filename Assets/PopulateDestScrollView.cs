@@ -31,11 +31,17 @@ public class PopulateDestScrollView : MonoBehaviour
         itemAdded.transform.name = "listDest_" + grossItems; // Starts at zero as opposed to the navpts convention
         m_destItems.Add(itemAdded);
         GetAirportData localGAD = FindAnyObjectByType<GetAirportData>();
-        localGAD.addToRefList(itemAdded);
+        if (localGAD != null)
+            localGAD.addToRefList(itemAdded);
+        if (localGAD.m_areas.Count > 0)
+        {
+            localGAD.PopulateNewDestinationDropDown(itemAdded);
+        }
 
         // NEED TO ADD CALCSTART DESTINATION ADDITION WITH DEFAULTED COORDINATE ENTRIES
         CalcStart localCS = FindAnyObjectByType<CalcStart>();
-        localCS.addDestCoordsItem(grossItems);
+        if (localCS != null)
+            localCS.addDestCoordsItem(grossItems);
 
 
         grossItems += 1; // Increase number of items that have existed.

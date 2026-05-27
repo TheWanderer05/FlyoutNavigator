@@ -18,6 +18,7 @@ public class GetAirportData : MonoBehaviour
     static readonly string LATTAG = "lat=";
     static readonly string LONTAG = "lon=";
     //static readonly string ALTTAG = "alt=";
+    private string[] m_filePath = null;
 
     [SerializeField] private TMP_Dropdown dd_start;
     [SerializeField] private TMP_Dropdown dd_dest; // going to need to replace this with a listener
@@ -53,7 +54,8 @@ public class GetAirportData : MonoBehaviour
 
         if (FileBrowser.Success)
         {
-            ReadData(FileBrowser.Result);
+            m_filePath = FileBrowser.Result;
+            ReadData(m_filePath);
         }
     }
 
@@ -116,11 +118,11 @@ public class GetAirportData : MonoBehaviour
             {
                 // when all fields are populated, add struct to the list
                 m_areas.Add(currentArea);
-                addDropdownOption(currentArea.name);
-                foreach (GameObject destItem in m_destList)
-                {
-                    addDestDropdownOption(currentArea.name, destItem);
-                }
+                addStartDropdownOption(currentArea.name);
+                //foreach (GameObject destItem in m_destList)
+                //{
+                //    addDestDropdownOption(currentArea.name, destItem);
+                //}
                 // reset current area element properties
                 currentArea.lat = "";
                 currentArea.lon = "";
@@ -132,10 +134,14 @@ public class GetAirportData : MonoBehaviour
         // If you're reading this and only have one airfield, consider therapy.
 
         dd_start.value = 0;
-        //dd_dest.value = 1;
+        dd_start.RefreshShownValue();
 
         setStartPoint();
-        //setDestPoint();
+        // Populate all existing destination items with imported area info and set default to default airfield
+        foreach (GameObject destItem in m_destList)
+        {
+            PopulateNewDestinationDropDown(destItem);
+        }
 
         // create airfield points on the map
         CreatePoints localPointsObject = FindObjectOfType<CreatePoints>();
@@ -144,12 +150,22 @@ public class GetAirportData : MonoBehaviour
         localLabelManager.createAirfieldLabels();
     }
 
-    // There's probably a better way of doing this, but I only have two dropdowns and their contents are to be identical. Just add the options "manually" for both.
-    // ^ This shit is not going to fly for the multi-destination stuff
-    private void addDropdownOption(string airfieldName)
+    // Populates a new destination item's dropdown as soon as it's added
+    public void PopulateNewDestinationDropDown(GameObject destItem) 
+    {
+        for (int i = 0; i < m_areas.Count; i++)
+        {
+            addDestDropdownOption(m_areas[i].name, destItem);
+        }
+
+        TMP_Dropdown dd_local = destItem.GetComponentInChildren<TMP_Dropdown>();
+        setDestPoint(dd_local); // Just so the fields are filled to avoid confusion. Defaults to default airfield coords
+        dd_local.RefreshShownValue();
+    }
+
+    private void addStartDropdownOption(string airfieldName)
     {
         dd_start.options.Add(new TMP_Dropdown.OptionData(airfieldName,null));
-        //dd_dest.options.Add(new TMP_Dropdown.OptionData(airfieldName,null));
     }
 
     private void addDestDropdownOption(string airfieldName, GameObject destItem)
@@ -174,7 +190,7 @@ public class GetAirportData : MonoBehaviour
     }
 
     // Changes a destination point coordinate fields based on destination dropdown input
-    public void setDestPoint(TMP_Dropdown destDropdown) // NEEDS REWORK FOR MULTI-DESTINATION
+    public void setDestPoint(TMP_Dropdown destDropdown)
     {
         int airfieldIndex = destDropdown.value;
 
