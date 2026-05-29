@@ -15,7 +15,6 @@ public class DestSetAirfield : MonoBehaviour
         dropdown.onValueChanged.AddListener(delegate { updateDestinations(dd_dest); });
     }
 
-    // Update is called once per frame
     void updateDestinations(TMP_Dropdown dropdown)
     {
         // Set lat/lon of this destination item's respective input fields
