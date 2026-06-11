@@ -19,6 +19,7 @@ public class ExportToCSV : MonoBehaviour
             //File.Create(exportPath+"/SavedPoints.csv"); // Should clear and overwrite the file every time it's "opened"
             string latOut = localCoords[0][0].ToString();
             string lonOut = localCoords[0][1].ToString();
+            // Need to find out how to check if the file is open before doing this to prevent a crash in the editor
             File.WriteAllText(exportPath + "/SavedPoints.csv", latOut + "," + lonOut + Environment.NewLine);
 
             for (int i = 1; i < localCoords.Count; i++)
