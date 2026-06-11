@@ -6,15 +6,24 @@ using TMPro;
 public class CalcStart : MonoBehaviour
 {
     // Start Lat/Lon coordinates in DEGREES
-    public float startLocLat = 0.0f;
-    public float startLocLon = 0.0f;
+    private float startLocLat = 0.0f;
+    private float startLocLon = 0.0f;
     
-    // End Lat/Lon coordinates in DEGREES
-    public float destLocLat = 0.0f;
-    public float destLocLon = 0.0f;
-    
+    private class DestCoordsItem // Used to store lat/lon pairs. The ID is to track which destination item it belongs to.
+    {
+        public float destLat;
+        public float destLon;
+        public int destID;
+    }
+
+    // Destination coordinate list
+    private List<DestCoordsItem> destLocCoordList = new List<DestCoordsItem>();
+    public int locationCount = 0;
+
+    // A bunch of this stuff can probably be set to private with the use of getter methods instead of direct access to prevent write accidents
     // Number of midpoints
-    public int numPts = 0;
+    public int numPts = 0; // Soon to be deprecated
+    public List<int[]> numPtsList = new List<int[]>(); // [0]: Destination item identifier, [1]: Destination number of points
 
     // Planet radius in km
     private float planetRadius = 6371.955f;
@@ -23,64 +32,86 @@ public class CalcStart : MonoBehaviour
     private float radConv = Mathf.PI / 180.0f;
 
     // Distance between start and end points
-    public float haversine_distance = 0.0f;
+    public List<float> haversineDistList = new List<float>(); // Consider making private
 
     // Distance between midpoints
-    public float haversine_dSplit = 0.0f;
+    public List<float> distSplitList = new List<float>(); // Consider making private
 
     // Initial bearing
     public float bearingStart = 0.0f;
 
     public List<float[]> coordMat = new List<float[]>();
 
+ 
     public void OnCalculateBtnClick()
     {
-        haversine_distance = CalcDistance( destLocLat, destLocLon, startLocLat, startLocLon );
-        bearingStart = CalcBearing( destLocLat, destLocLon, startLocLat, startLocLon );
-        haversine_dSplit = haversine_distance / (numPts + 1);
-
-        /*
-            For each checkpoint, project a point haversine_dSplit km in front of
-            the vehicle from initial heading. From there, calculate heading to the 
-            next point towards the destination.
-        */
-
-        // Establish matrix dimensions (Lat/Lon/Dist/Bearing = 3 wide, Height = Start + Midpoints + end, so midpoints + 2)
-        //int coordMatHeight = numPts + 2;
-        //int coordMatWidth = 4;
-
         coordMat.Clear();
+        haversineDistList.Clear();
+        distSplitList.Clear();
 
-        //float[,] coordMat = new float[coordMatWidth, coordMatHeight];
-        float[] startRow = { startLocLat, startLocLon, bearingStart};
-        coordMat.Add(startRow);
+        float localStartLat = startLocLat;
+        float localStartLon = startLocLon;
 
-        float fraction = 1.0f / ((float)numPts + 1.0f);
-
-        // Calculate midpoint coordinates and add them to the matrix. Calculate bearing in the next loop...
-        for (int i = 1; i <= numPts; i++)
+        for (int j = 0; j < destLocCoordList.Count; j++)
         {
-            float[] interPtCoords = CalcInterPt(startLocLat, startLocLon, destLocLat, destLocLon, haversine_distance, fraction*i);
+            float localDestLat = destLocCoordList[j].destLat;
+            float localDestLon = destLocCoordList[j].destLon;
+            int localNumPts = numPtsList[j][1];
 
-            // Bearing has not been added yet
-            coordMat.Add(interPtCoords);
+            haversineDistList.Add(CalcDistance(localDestLat, localDestLon, localStartLat, localStartLon));
+            bearingStart = CalcBearing(localDestLat, localDestLon, localStartLat, localStartLon);
+            distSplitList.Add(haversineDistList[j] / (localNumPts + 1));
+
+            /*
+                For each checkpoint, project a point haversine_dSplit km in front of
+                the vehicle from initial heading. From there, calculate heading to the 
+                next point towards the destination.
+            */
+
+            float[] startRow = { localStartLat, localStartLon, bearingStart };
+            coordMat.Add(startRow);
+
+            float fraction = 1.0f / ((float)localNumPts + 1.0f);
+
+            // Calculate midpoint coordinates and add them to the matrix. Calculate bearing in the next loop...
+            for (int i = 1; i <= localNumPts; i++)
+            {
+                float[] interPtCoords = CalcInterPt(localStartLat, localStartLon, localDestLat, localDestLon, haversineDistList[j], fraction * i);
+
+                // Bearing has not been added yet
+                coordMat.Add(interPtCoords);
+            }
+
+            float[] destRow = { localDestLat, localDestLon, 0 };
+            coordMat.Add(destRow);
+
+            // Calculate bearing to midpoints and add them to the matrix.
+            for (int i = 1; i < coordMat.Count - 1; i++)
+            {
+                float bearingToNext = CalcBearing((coordMat[i + 1])[0], (coordMat[i + 1])[1], (coordMat[i])[0], (coordMat[i])[1]);
+                (coordMat[i])[2] = bearingToNext;
+            }
+
+            foreach (var item in coordMat)
+            {
+                Debug.Log(item[0].ToString() + ", " + item[1].ToString() + ", " + item[2].ToString());
+            }
+
+            // Update "start" location to current destination for next loop to use as a starting point
+            localStartLat = localDestLat;
+            localStartLon = localDestLon;
         }
 
-        float[] destRow = { destLocLat, destLocLon, 0 };
-        coordMat.Add(destRow);
-
-        // Calculate bearing to midpoints and add them to the matrix.
-        for (int i = 1; i < coordMat.Count - 1; i++)
+        // We have the list of coordinates, now go through and delete any duplicates. These will be at part-way airfield destinations
+        for (int k = 1; k < coordMat.Count; k++)
         {
-            float bearingToNext = CalcBearing((coordMat[i + 1])[0], (coordMat[i+1])[1], (coordMat[i])[0], (coordMat[i])[1]);
-            (coordMat[i])[2] = bearingToNext;
-        }
-
-        foreach (var item in coordMat)
-        {
-            Debug.Log(item[0].ToString() + ", " + item[1].ToString() + ", " + item[2].ToString());
+            if ( (coordMat[k])[0] == (coordMat[k-1])[0] && (coordMat[k])[1] == (coordMat[k - 1])[1])
+            {
+                coordMat.RemoveAt(k-1);
+            }
         }
     }
+
 
     // Calculate haversine distance between two points.
     private float CalcDistance(float destLat, float destLon, float currLat, float currLon)
@@ -148,31 +179,129 @@ public class CalcStart : MonoBehaviour
 
     public void readLatStartInput(string inLatStart)
     {
-        startLocLat = float.Parse(inLatStart);
-        Debug.Log(startLocLat);
+        if (float.TryParse(inLatStart, out float parsedLat))
+        {
+            startLocLat = parsedLat;
+        }
+        else
+        {
+            startLocLat = 0.0f;
+        }
+            Debug.Log(startLocLat);
     }
 
     public void readLonStartInput(string inLonStart)
     {
-        startLocLon = float.Parse(inLonStart);
+        if (float.TryParse(inLonStart, out float parsedLon))
+        {
+            startLocLon = parsedLon;
+        }
+        else
+        {
+            startLocLon = 0.0f;
+        }
         Debug.Log(startLocLon);
     }
 
-    public void readLatEndInput(string inLatEnd)
+    //public void readLatEndInput(string inLatEnd)
+    //{
+    //    destLocLat = float.Parse(inLatEnd);
+    //    Debug.Log(destLocLat);
+    //}
+
+    //public void readLonEndInput(string inLonEnd)
+    //{
+    //    destLocLon = float.Parse(inLonEnd);
+    //    Debug.Log(destLocLon);
+    //}
+
+    public void addDestCoordsItem(int idNum)
     {
-        destLocLat = float.Parse(inLatEnd);
-        Debug.Log(destLocLat);
+        DestCoordsItem newCoordsItem = new DestCoordsItem();
+        newCoordsItem.destID = idNum;
+        newCoordsItem.destLon = 0.0f;
+        newCoordsItem.destLat = 0.0f;
+        destLocCoordList.Add(newCoordsItem);
+        locationCount = destLocCoordList.Count;
+
+        // Create a numPtsList entry defaulted to zero points
+        updateNumPtsList(0, idNum);
+
+        Debug.Log("Added new DestCoordsItem in CalcStart with id "+idNum);
     }
 
-    public void readLonEndInput(string inLonEnd)
+    public void updateDestItemLat(int idNum, float updatedLat)
     {
-        destLocLon = float.Parse(inLonEnd);
-        Debug.Log(destLocLon);
+        for(int i=0;i<destLocCoordList.Count;i++)
+        {
+            if (idNum == destLocCoordList[i].destID)
+            {
+                destLocCoordList[i].destLat = updatedLat;
+            }
+        }
     }
+
+    public void updateDestItemLon(int idNum, float updatedLon)
+    {
+        for (int i = 0; i < destLocCoordList.Count; i++)
+        {
+            if (idNum == destLocCoordList[i].destID)
+            {
+                destLocCoordList[i].destLon = updatedLon;
+            }
+        }
+    }
+
 
     public void readNumPtsInput(string pointCount)
     {
         numPts = int.Parse(pointCount);
         Debug.Log(numPts);
+    }
+
+    public void updateNumPtsList(int numDestPts, int idNum)
+    {
+        // Somehow need to keep track of which entry belongs to which destination
+        // Check if this entry already exists
+        bool foundFlag = false;
+
+        for(int i=0;i<numPtsList.Count;i++)
+        {
+            if (idNum == numPtsList[i][0]) // This entry already exists, just update its number of points
+            {
+                numPtsList[i][1] = numDestPts;
+                foundFlag = true;
+                //Debug.Log("CalcStart NumPts list item updated at index " + i + " (Item " + idNum + ")");
+            }
+        }
+        // If this entry doesn't already exist, make one
+        if (!foundFlag)
+        {
+            int[] arrayToAdd =new int[]{ idNum,numDestPts};
+            numPtsList.Add(arrayToAdd);
+            //Debug.Log("CalcStart NumPts list item created at index " + (numPtsList.Count-1) + "(Item " + idNum + ")");
+        }
+    }
+
+    public void removeDestination(int idNum)
+    {
+        for (int i = 0; i < numPtsList.Count; i++)
+        {
+            if (idNum == numPtsList[i][0]) // Remove the entry when found. if it isn't found, do nothing because it doesn't exist
+            {
+                numPtsList.RemoveAt(i);
+                Debug.Log("CalcStart NumPts list item removed at index " + i + " (Item " + idNum +")");
+            }
+        }
+
+        // Check the coords item list, too
+        for (int i = 0; i < destLocCoordList.Count; i++)
+        {
+            if (idNum == destLocCoordList[i].destID) // Remove the entry when found. if it isn't found, do nothing because it doesn't exist
+            {
+                destLocCoordList.RemoveAt(i);
+                Debug.Log("CalcStart LocCoordList item removed at index " + i + " (Item " + idNum + ")");
+            }
+        }
     }
 }

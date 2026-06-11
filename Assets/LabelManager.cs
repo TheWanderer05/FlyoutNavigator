@@ -63,7 +63,7 @@ public class LabelManager : MonoBehaviour
 
                     string airfieldName = m_anchor.transform.GetChild(i).gameObject.name.Substring("fieldPoint_".Length);
                     var labelText = namePlate.transform.Find("LabelText");
-                    labelText.GetComponent<TMPro.TextMeshPro>().text = airfieldName;
+                    labelText.GetComponent<TMPro.TextMeshPro>().text = "<#fac657>" + airfieldName+"</color>";
 
                     namePlate.transform.SetParent(thisChild);
                     namePlate.transform.position = thisChild.position;
@@ -81,6 +81,9 @@ public class LabelManager : MonoBehaviour
 
     public void createNavPointLabels()
     {
+        // Clear any existing Sublabels
+        clearNavPointLabels();
+
         for (var i = m_anchor.childCount - 1; i >= 0; i--)
         {
             if (m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG))
@@ -94,7 +97,43 @@ public class LabelManager : MonoBehaviour
 
                     string pointName = m_anchor.transform.GetChild(i).gameObject.name.Substring("navPoint_".Length);
                     var labelText = namePlate.transform.Find("LabelText");
-                    labelText.GetComponent<TMPro.TextMeshPro>().text = pointName;
+                    labelText.GetComponent<TMPro.TextMeshPro>().text = "<#b8ffe1>" + pointName + "</color>";
+
+                    namePlate.transform.SetParent(thisChild);
+                    namePlate.transform.position = thisChild.position;
+                    namePlate.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f) * 25;
+                    namePlate.transform.rotation = thisChild.rotation;
+                }
+            }
+            else if (m_anchor.transform.GetChild(i).gameObject.CompareTag(STARTTAG))
+            {
+                var thisChild = m_anchor.transform.GetChild(i).transform;
+
+                var namePlate = Instantiate(m_labelPrefab);
+                if (namePlate != null)
+                {
+                    namePlate.tag = NAVLABELTAG; // Can just re-use this, no need to make a new tag
+
+                    var labelText = namePlate.transform.Find("LabelText");
+                    labelText.GetComponent<TMPro.TextMeshPro>().text = "<#b8ffe1>0 (Start)</color>";
+
+                    namePlate.transform.SetParent(thisChild);
+                    namePlate.transform.position = thisChild.position;
+                    namePlate.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f) * 25;
+                    namePlate.transform.rotation = thisChild.rotation;
+                }
+            }
+            else if (m_anchor.transform.GetChild(i).gameObject.CompareTag(ENDTAG))
+            {
+                var thisChild = m_anchor.transform.GetChild(i).transform;
+
+                var namePlate = Instantiate(m_labelPrefab);
+                if (namePlate != null)
+                {
+                    namePlate.tag = NAVLABELTAG; // Can just re-use this, no need to make a new tag
+
+                    var labelText = namePlate.transform.Find("LabelText");
+                    labelText.GetComponent<TMPro.TextMeshPro>().text = "<#b8ffe1>End</color>"; // Need to get number of points here
 
                     namePlate.transform.SetParent(thisChild);
                     namePlate.transform.position = thisChild.position;
@@ -124,8 +163,7 @@ public class LabelManager : MonoBehaviour
                     if (thisChild.transform.GetChild(j).gameObject.CompareTag(NAVLABELTAG))
                     {
                         // Delete the label.
-                        
-                        Object.Destroy(thisChild.transform.GetChild(j).gameObject);
+                        DestroyImmediate(thisChild.transform.GetChild(j).gameObject);
                     }
                 }
             }
@@ -134,6 +172,9 @@ public class LabelManager : MonoBehaviour
 
     public void createSubNavLabels()
     {
+        // Clear any existing Sublabels
+        clearSubNavLabels();
+        
         // Get waypoint data from list
         List<float[]> coordMat_local = new List<float[]>();
         coordMat_local.Clear();
@@ -143,7 +184,7 @@ public class LabelManager : MonoBehaviour
         coordListCount = m_calcStart.coordMat.Count;
         coordMat_local = m_calcStart.coordMat;
 
-        for (var i = m_anchor.childCount - 1; i >= 0; i--) // Will need to scale this code to work for multiple destinations, specifically finding the point index for intermediate destinations
+        for (var i = m_anchor.childCount - 1; i >= 0; i--)
         {
             // Search for points that are navpoints
             if (m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG))
@@ -164,7 +205,7 @@ public class LabelManager : MonoBehaviour
                 float lon = (coordMat_local[pointIndex])[1];
                 float brg = (coordMat_local[pointIndex])[2];
 
-                instantiateSubLabel(thisPoint, lat, lon, brg);
+                InstantiateSubLabel(thisPoint, lat, lon, brg);
                 
             }
             else if (m_anchor.transform.GetChild(i).gameObject.CompareTag(STARTTAG))    
@@ -176,7 +217,7 @@ public class LabelManager : MonoBehaviour
                 float lon = (coordMat_local[0])[1];
                 float brg = (coordMat_local[0])[2];
 
-                instantiateSubLabel(thisPoint, lat, lon, brg);
+                InstantiateSubLabel(thisPoint, lat, lon, brg);
             }
             else if (m_anchor.transform.GetChild(i).gameObject.CompareTag(ENDTAG))  
             {
@@ -187,7 +228,7 @@ public class LabelManager : MonoBehaviour
                 float lon = (coordMat_local[coordListCount - 1])[1];
                 float brg = (coordMat_local[coordListCount - 1])[2];
 
-                instantiateSubLabel(thisPoint, lat, lon, brg);
+                InstantiateSubLabel(thisPoint, lat, lon, brg);
             }
         }
 
@@ -195,12 +236,28 @@ public class LabelManager : MonoBehaviour
         UpdateLabelOffset(m_maxRadius - (m_maxRadius - m_minRadius));
         UpdateLabelRotation();
         UpdateLabelOpacity();
-        changeSublabelVisibility();
+        ChangeSublabelVisibility();
     }
 
     public void clearSubNavLabels()
     {
-
+        for (var i = m_anchor.childCount - 1; i >= 0; i--)
+        {
+            // Find navpoint object
+            if (m_anchor.transform.GetChild(i).gameObject.CompareTag(NAVTAG))
+            {
+                var thisChild = m_anchor.transform.GetChild(i).gameObject;
+                // Find any nav sublabels attached and delete them
+                for (var j = thisChild.transform.childCount - 1; j >= 0; j--)
+                {
+                    if (thisChild.transform.GetChild(j).gameObject.CompareTag(NAVSUBLABELTAG))
+                    {
+                        // Delete the sublabel.
+                        DestroyImmediate(thisChild.transform.GetChild(j).gameObject);
+                    }
+                }
+            }
+        }
     }
 
     public void UpdateLabelRotation()
@@ -281,7 +338,7 @@ public class LabelManager : MonoBehaviour
 
                                     if (labelText != null)
                                     {
-                                        fadeLabel2(labelText, proxAngle);
+                                        FadeLabel2(labelText, proxAngle);
                                     }
                                 }
                             }
@@ -413,7 +470,7 @@ public class LabelManager : MonoBehaviour
 
                         if (childText != null)
                         {
-                            Vector3 newPosition = offsetRadius(childText.position.x, childText.position.y, childText.position.z, localOffsetScalar, isNavPt);
+                            Vector3 newPosition = OffsetRadius(childText.position.x, childText.position.y, childText.position.z, localOffsetScalar, isNavPt);
                             childText.position = newPosition;
                         }
                     }
@@ -423,7 +480,7 @@ public class LabelManager : MonoBehaviour
     }
 
     // Toggle visibility of sublabels
-    public void changeSublabelVisibility()
+    public void ChangeSublabelVisibility()
     {
         for (var i = m_anchor.childCount - 1; i >= 0; i--)
         {
@@ -450,7 +507,7 @@ public class LabelManager : MonoBehaviour
         }
     }
 
-    private Vector3 offsetRadius(float xIn, float yIn, float zIn, float radiusOffset, bool isNavPt)
+    private Vector3 OffsetRadius(float xIn, float yIn, float zIn, float radiusOffset, bool isNavPt)
     {
         // using an input desired radius/delta radius, get spherical coords of old position, add offset, then convert back to cartesian and output.
 
@@ -481,7 +538,7 @@ public class LabelManager : MonoBehaviour
         return new Vector3(xOut, yOut, zOut);
     }
 
-    private void fadeLabel(TextMeshPro tmp, float distance) // Camera distance-based fading
+    private void FadeLabel(TextMeshPro tmp, float distance) // Camera distance-based fading
     {
         if (distance > 1.10f) // Camera rotation is around 0,0,0 so its radius from planet center is just the position magnitude
         {
@@ -493,7 +550,7 @@ public class LabelManager : MonoBehaviour
         }
     }
 
-    private void fadeLabel2(TextMeshPro tmp, float arcDist) // Cursor distance-based fading
+    private void FadeLabel2(TextMeshPro tmp, float arcDist) // Cursor distance-based fading
     {
         var fovScale = (Camera.main.fieldOfView / 60.0f);
         if (arcDist < 0.07f * fovScale)
@@ -506,7 +563,7 @@ public class LabelManager : MonoBehaviour
         }
     }
 
-    private void instantiateSubLabel(Transform point, float lat, float lon, float brg)
+    private void InstantiateSubLabel(Transform point, float lat, float lon, float brg)
     {
         var infoLabel = Instantiate(m_subLabelPrefab);
         if (infoLabel != null)

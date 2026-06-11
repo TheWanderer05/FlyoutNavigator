@@ -5,6 +5,8 @@ using UnityEngine;
 using System.IO;
 using TMPro;
 using SimpleFileBrowser;
+using Unity.VisualScripting;
+using UnityEngine.UI;
 
 public class GetAirportData : MonoBehaviour
 {
@@ -16,16 +18,18 @@ public class GetAirportData : MonoBehaviour
     static readonly string LATTAG = "lat=";
     static readonly string LONTAG = "lon=";
     //static readonly string ALTTAG = "alt=";
+    private string[] m_filePath = null;
 
     [SerializeField] private TMP_Dropdown dd_start;
-    [SerializeField] private TMP_Dropdown dd_dest;
+    [SerializeField] private TMP_Dropdown dd_dest; // going to need to replace this with a listener
 
     [SerializeField] private TMP_InputField m_startLatInput;
     [SerializeField] private TMP_InputField m_startLonInput;
-    [SerializeField] private TMP_InputField m_destLatInput;
+    [SerializeField] private TMP_InputField m_destLatInput; // going to need to replace this with a listener
     [SerializeField] private TMP_InputField m_destLonInput;
 
     public List<AreaElement> m_areas = new List<AreaElement>();
+    public List<GameObject> m_destList = new List<GameObject>(); // List of destination items
     public struct AreaElement
     {
         public string name;
@@ -50,7 +54,8 @@ public class GetAirportData : MonoBehaviour
 
         if (FileBrowser.Success)
         {
-            ReadData(FileBrowser.Result);
+            m_filePath = FileBrowser.Result;
+            ReadData(m_filePath);
         }
     }
 
@@ -68,7 +73,7 @@ public class GetAirportData : MonoBehaviour
 
         m_areas.Clear();
         dd_start.ClearOptions();
-        dd_dest.ClearOptions();
+        //dd_dest.ClearOptions();
 
         int idx = 0;
 
@@ -113,7 +118,11 @@ public class GetAirportData : MonoBehaviour
             {
                 // when all fields are populated, add struct to the list
                 m_areas.Add(currentArea);
-                addDropdownOption(currentArea.name);
+                addStartDropdownOption(currentArea.name);
+                //foreach (GameObject destItem in m_destList)
+                //{
+                //    addDestDropdownOption(currentArea.name, destItem);
+                //}
                 // reset current area element properties
                 currentArea.lat = "";
                 currentArea.lon = "";
@@ -125,25 +134,44 @@ public class GetAirportData : MonoBehaviour
         // If you're reading this and only have one airfield, consider therapy.
 
         dd_start.value = 0;
-        dd_dest.value = 1;
+        dd_start.RefreshShownValue();
 
         setStartPoint();
-        setDestPoint();
+        // Populate all existing destination items with imported area info and set default to default airfield
+        foreach (GameObject destItem in m_destList)
+        {
+            PopulateNewDestinationDropDown(destItem);
+        }
 
         // create airfield points on the map
         CreatePoints localPointsObject = FindObjectOfType<CreatePoints>();
         localPointsObject.ModifyAirfieldPoints();
         LabelManager localLabelManager = FindObjectOfType<LabelManager>();
         localLabelManager.createAirfieldLabels();
-
-        // create text labels for airfields on the map
     }
 
-    // There's probably a better way of doing this, but I only have two dropdowns and their contents are to be identical. Just add the options "manually" for both.
-    private void addDropdownOption(string airfieldName)
+    // Populates a new destination item's dropdown as soon as it's added
+    public void PopulateNewDestinationDropDown(GameObject destItem) 
+    {
+        for (int i = 0; i < m_areas.Count; i++)
+        {
+            addDestDropdownOption(m_areas[i].name, destItem);
+        }
+
+        TMP_Dropdown dd_local = destItem.GetComponentInChildren<TMP_Dropdown>();
+        setDestPoint(dd_local); // Just so the fields are filled to avoid confusion. Defaults to default airfield coords
+        dd_local.RefreshShownValue();
+    }
+
+    private void addStartDropdownOption(string airfieldName)
     {
         dd_start.options.Add(new TMP_Dropdown.OptionData(airfieldName,null));
-        dd_dest.options.Add(new TMP_Dropdown.OptionData(airfieldName,null));
+    }
+
+    private void addDestDropdownOption(string airfieldName, GameObject destItem)
+    {
+        TMP_Dropdown dd_local = destItem.GetComponentInChildren<TMP_Dropdown>();
+        dd_local.options.Add(new TMP_Dropdown.OptionData(airfieldName, null));
     }
 
     // Changes the start point coordinate fields based on start dropdown input.
@@ -161,9 +189,10 @@ public class GetAirportData : MonoBehaviour
         m_startLonInput.text = airfieldLon;
     }
 
-    public void setDestPoint()
+    // Changes a destination point coordinate fields based on destination dropdown input
+    public void setDestPoint(TMP_Dropdown destDropdown)
     {
-        int airfieldIndex = dd_dest.value;
+        int airfieldIndex = destDropdown.value;
 
         string airfieldLat = (m_areas[airfieldIndex]).lat;
         string airfieldLon = (m_areas[airfieldIndex]).lon;
@@ -171,8 +200,18 @@ public class GetAirportData : MonoBehaviour
         convertFileCoordinates(ref airfieldLat);
         convertFileCoordinates(ref airfieldLon);
 
-        m_destLatInput.text = airfieldLat;
-        m_destLonInput.text = airfieldLon;
+        // Find input field objects
+        Transform latChild = destDropdown.transform.parent.Find("inF_DestLat");
+        if (latChild.TryGetComponent<TMP_InputField>(out TMP_InputField destLatField))
+        {
+            destLatField.text = airfieldLat;
+        }
+
+        Transform lonChild = destDropdown.transform.parent.Find("inF_DestLon");
+        if (lonChild.TryGetComponent<TMP_InputField>(out TMP_InputField destLonField))
+        {
+            destLonField.text = airfieldLon;
+        }
     }
 
     private void convertFileCoordinates(ref string coordinate_str)
@@ -184,4 +223,21 @@ public class GetAirportData : MonoBehaviour
             coordinate_str = coordinate_fl.ToString("0.0000");
         };
     }
+
+    public void addToRefList(GameObject destItem)
+    {
+        if (!m_destList.Contains(destItem))
+        {
+            m_destList.Add(destItem);
+        }
+    }
+
+    public void removeFromRefList(GameObject destItem)
+    {
+        if (m_destList.Contains(destItem))
+        {
+            m_destList.Remove(destItem);
+        }
+    }
+
 }
